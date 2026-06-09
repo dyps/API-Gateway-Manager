@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Gateway Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>API Gateway Manager</h1>
+        </div>
+
+        <div id="message" class="message x"></div>
+
+        <div class="card ">
+            <div class="card-header">
+                <h2>Enviar Arquivo JSON</h2>
+            </div>
+            <div class="card-content">
+                <div id="fileInputDiv" class="file-input-group">
+                    <!-- API Gateway JSON -->
+                    <div class="drop-zone" id="dropZoneConfig">
+                        <div class="drop-zone-icon">📄</div>
+                        <div class="drop-zone-label">JSON do API Gateway</div>
+                        <div class="drop-zone-hint">Arraste e solte ou clique para escolher</div>
+                        <span id="fileInputName" class="drop-zone-filename">Nenhum arquivo</span>
+                        <div class="drop-zone-actions">
+                            <button class="file-choose-btn" id="btnChooseConfig">Escolher arquivo</button>
+                            <button id="clearBtn" onclick="handleClearConfig()" class="clear-file-btn hidden">✕ Limpar</button>
+                        </div>
+                        <input type="file" id="fileInput" accept=".json" class="hidden">
+                    </div>
+                    <!-- Environments JSON -->
+                    <div class="drop-zone" id="dropZoneEnvironments">
+                        <div class="drop-zone-icon">🌍</div>
+                        <div class="drop-zone-label">JSON de Ambientes</div>
+                        <div class="drop-zone-hint">Arraste e solte ou clique para escolher</div>
+                        <span id="fileInputEnvironmentsName" class="drop-zone-filename">Nenhum arquivo</span>
+                        <div class="drop-zone-actions">
+                            <button class="file-choose-btn" id="btnChooseEnvironments">Escolher arquivo</button>
+                            <button id="clearEnvironmentsBtn" onclick="handleClearEnvironments()" class="clear-file-btn hidden">✕ Limpar</button>
+                        </div>
+                        <input type="file" id="fileInputEnvironments" accept=".json" class="hidden">
+                    </div>
+                    <!-- Group Paths JSON -->
+                    <div class="drop-zone" id="dropZoneGroupPaths">
+                        <div class="drop-zone-icon">🗂️</div>
+                        <div class="drop-zone-label">JSON de Grupos de Paths</div>
+                        <div class="drop-zone-hint">Arraste e solte ou clique para escolher</div>
+                        <span id="fileInputGroupPathsName" class="drop-zone-filename">Nenhum arquivo</span>
+                        <div class="drop-zone-actions">
+                            <button class="file-choose-btn" id="btnChooseGroupPaths">Escolher arquivo</button>
+                            <button id="clearGroupPathsBtn" onclick="handleClearGroupPaths()" class="clear-file-btn hidden">✕ Limpar</button>
+                        </div>
+                        <input type="file" id="fileInputGroupPaths" accept=".json" class="hidden">
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <div id="configsApiGatewayCard" class="card hidden">
+            <div class="card-header" style="display:flex;align-items:center;gap:0.5rem;">
+                <h2>Configurações do ApiGateway</h2>
+                <span id="envViewerBtn" title="Ver valores do ambiente atual" style="cursor:pointer;font-size:1.2rem;user-select:none;">👀</span>
+            </div>
+            <div id="configsApiGatewayEditers" class="card-content">
+
+            </div>
+        </div>
+
+        <div id="groupPathsCard" class="card hidden">
+            <div class="card-header">
+                <h2>Grupos de Paths</h2>
+            </div>
+            <div id="groupPathsLoading" class="group-paths-loading hidden">
+                <span class="group-paths-spinner"></span> Carregando grupos...
+            </div>
+            <div id="groupPathsList" class="card-content">
+            </div>
+        </div>
+
+        <div id="gatewayResponsesCard" class="card hidden">
+            <div class="card-header">
+                <h2>Gateway Responses</h2>
+            </div>
+            <div id="gatewayResponsesList" class="card-content">
+            </div>
+        </div>
+
+        <div id="pathsApiGatewayCard" class="card hidden">
+            <div class="card-header">
+                <h2>Paths do ApiGateway</h2>
+            </div>
+            <div id="pathsApiGatewayDiv" class="card-content card-paths">
+
+            </div>
+        </div>
+
+        <div id="contentCard" class="card hidden">
+            <div class="card-header">
+                <h2>Conteúdo do JSON</h2>
+            </div>
+            <div class="card-content" id="jsonContent">
+                
+            </div>
+        </div>
+    </div>
+
+    <script src="utils/storage.js"></script>
+    <script src="utils/group-paths-validator.js"></script>
+    <script src="script.js"></script>
+    <script src="jsonViewr.js"></script>
+    <script src="fixedEnvironments.js"></script>
+    <script src="components/editer-envirements.js"></script>
+
+
+
+    
+    <script src="utils/json-util.js"></script>
+
+</body>
+</html>
+

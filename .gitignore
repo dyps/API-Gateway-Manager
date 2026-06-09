@@ -1,0 +1,13 @@
+.kiro
+.vscode
+scripts
+
+# Arquivos com dados sensíveis (ambientes, credenciais AWS, IDs internos)
+environments.json
+
+# JSONs de configuração do API Gateway (contêm ARNs, IDs e URLs internas)
+groupPaths.json
+*.apigateway.json
+
+# Qualquer JSON que o usuário carregue localmente (não deve ir ao repo)
+# Adicione aqui outros JSONs de configuração se necessário
