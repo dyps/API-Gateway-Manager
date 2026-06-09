@@ -1,99 +1,54 @@
-# JSON Config Manager
+# API Gateway Manager
 
-Um site simples e funcional para gerenciar arquivos JSON localmente.
+Ferramenta para agilizar a geração e manutenção de arquivos JSON de configuração do AWS API Gateway.
 
-## Características
+O fluxo normal sem essa ferramenta é tedioso: exportar o JSON do API Gateway, editar manualmente dezenas de paths, trocar valores de ambiente (connectionId, NLB, ARNs, hostPortal) em centenas de lugares, e torcer para não errar nada. Esta ferramenta automatiza esse processo.
 
-- ✅ Upload de arquivo JSON
-- ✅ Salvamento automático do caminho do arquivo (usando localStorage)
-- ✅ Carregamento automático ao recarregar a página
-- ✅ Visualização formatada do conteúdo JSON
-- ✅ Limpeza de configuração
-- ✅ Validação de arquivo JSON
-- ✅ Interface responsiva e intuitiva
+---
 
-## Como Usar
+## O que ela faz
 
-### Opção 1: Abrir direto no navegador
+**Troca de ambiente com um clique**
+Carregue o JSON do API Gateway e selecione o ambiente de destino. A ferramenta substitui automaticamente todos os valores internos (connectionId, NLB, ARNs do authorizer, hostPortal) para o ambiente escolhido, sem edição manual.
 
-1. Baixe os arquivos:
-   - `index.html`
-   - `style.css`
-   - `script.js`
+**Gerenciamento de grupos de paths**
+Os paths do API Gateway são organizados em grupos lógicos (ex: "Ps Api", "Audit", "Onboarding Api"). A ferramenta compara o que está no JSON com o que deveria estar e mostra o status de cada grupo: presente, ausente, divergente. Você pode adicionar, atualizar ou remover grupos individualmente, ou resolver todas as pendências de uma vez.
 
-2. Coloque os três arquivos na mesma pasta
+**Download pronto para importar**
+Gera o JSON final validado, com o nome do ambiente e timestamp, pronto para importar direto no AWS API Gateway.
 
-3. Abra o arquivo `index.html` no seu navegador (duplo clique)
+---
 
-### Opção 2: Usar um servidor local (recomendado)
+## Configuração inicial
 
-Se você tem Python instalado:
-
-```bash
-# Python 3
-python -m http.server 8000
-
-# Python 2
-python -m SimpleHTTPServer 8000
-```
-
-Depois acesse: `http://localhost:8000`
-
-Se você tem Node.js instalado:
-
-```bash
-# Instalar http-server globalmente
-npm install -g http-server
-
-# Executar
-http-server
-```
-
-Depois acesse: `http://localhost:8080`
-
-## Como Funciona
-
-1. **Selecione um arquivo JSON** usando o input de arquivo
-2. **Clique em "Salvar"** para salvar o arquivo
-3. **O caminho e conteúdo serão exibidos** na página
-4. **Ao recarregar a página**, o arquivo será carregado automaticamente
-5. **Clique em "Limpar Configuração"** para remover o arquivo salvo
-
-## Armazenamento
-
-Os dados são salvos no **localStorage** do navegador, então:
-- Os dados persistem entre recarregamentos da página
-- Os dados são específicos por navegador e domínio
-- Limpar o cache do navegador remove os dados salvos
-
-## Estrutura de Arquivos
+Copie o arquivo de exemplo e preencha com os dados reais dos seus ambientes:
 
 ```
-json-config-simple/
-├── index.html      # Estrutura HTML
-├── style.css       # Estilos CSS
-├── script.js       # Lógica JavaScript
-└── README.md       # Este arquivo
+environments.example.json  →  environments.json
 ```
 
-## Compatibilidade
+Cada ambiente precisa de: nome, ARNs do authorizer, connectionId, host, NLB, hostPortal e os grupos padrão que ele deve conter.
 
-- ✅ Chrome/Edge
-- ✅ Firefox
-- ✅ Safari
-- ✅ Opera
-- ✅ Qualquer navegador moderno com suporte a localStorage
+> O `environments.json` está no `.gitignore` — seus dados reais não são versionados.
 
-## Próximas Funcionalidades
+Para os grupos de paths, o arquivo de exemplo mostra a estrutura esperada:
 
-Você pode adicionar:
-- Edição do JSON na página
-- Download do arquivo modificado
-- Validação mais avançada
-- Suporte a múltiplos arquivos
-- Histórico de alterações
+```
+groupPaths.example.json
+```
 
-## Licença
+---
 
-Livre para usar e modificar conforme necessário.
+## Como abrir
 
+Abra o arquivo `index.html` diretamente no navegador. Nenhuma instalação necessária.
+
+---
+
+## Fluxo de uso
+
+1. Carregue o **JSON do API Gateway** exportado da AWS
+2. Carregue o **JSON de grupos de paths** com os grupos do seu projeto
+3. Selecione o **ambiente de destino** nos botões de rádio
+4. Resolva as pendências de grupos se houver
+5. Clique em **Baixar JSON** para gerar o arquivo final
