@@ -17,6 +17,35 @@
         "defaultGroups": ["Grupo A", "Grupo B"]
     },
     {
+        "name": "Meu Ambiente DEV (com autorizador extra)",
+        "title": "Api Gateway - DEV",
+        "description": "Exemplo com dois autorizadores. O lambda-authorizer (header/token) é sempre gerado automaticamente a partir de authorizerUri e authorizerCredentials. Autorizadores adicionais são declarados em securityDefinitions — authorizerUri e authorizerCredentials herdam os valores do ambiente se omitidos.",
+        "basePath": "/dev",
+        "x-amazon-apigateway-security-policy": "TLS_1_0",
+
+        "authorizerCredentials": "arn:aws:iam::ACCOUNT_ID:role/lambda_auth_role_InvokeFunction",
+        "authorizerUri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:ACCOUNT_ID:function:api_gateway_authorizer/invocations",
+
+        "securityDefinitions": {
+            "meu-autorizador-extra": {
+                "type": "apiKey",
+                "name": "NOME_DO_PARAMETRO",
+                "in": "query",
+                "x-amazon-apigateway-authorizer": {
+                    "type": "request",
+                    "identitySource": "method.request.querystring.NOME_DO_PARAMETRO"
+                }
+            }
+        },
+
+        "connectionId": "ABCDEF",
+        "host": "ABCDEFGH.execute-api.us-east-1.amazonaws.com",
+        "hostPortal": "'https://portal.dev.example.com'",
+        "nlb": "http://NLB-NAME.elb.us-east-1.amazonaws.com",
+
+        "defaultGroups": ["Grupo A", "Grupo B"]
+    },
+    {
         "name": "Meu Ambiente PROD",
         "title": "Api Gateway - PROD",
         "description": "Ambiente de produção",

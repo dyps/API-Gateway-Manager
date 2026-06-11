@@ -1,5 +1,5 @@
-function buildSecurityDefinitions(authorizerUri, authorizerCredentials) {
-    return {
+function buildSecurityDefinitions(authorizerUri, authorizerCredentials, securityDefinitions) {
+    const definitions = {
         "lambda-authorizer": {
             "type": "apiKey",
             "name": "Authorization",
@@ -13,6 +13,24 @@ function buildSecurityDefinitions(authorizerUri, authorizerCredentials) {
             }
         }
     };
+
+    if (securityDefinitions && typeof securityDefinitions === 'object') {
+        for (const [key, def] of Object.entries(securityDefinitions)) {
+            const authorizer = def["x-amazon-apigateway-authorizer"] || {};
+            definitions[key] = {
+                ...def,
+                "x-amazon-apigateway-authtype": def["x-amazon-apigateway-authtype"] || "custom",
+                "x-amazon-apigateway-authorizer": {
+                    ...authorizer,
+                    "authorizerUri": authorizer.authorizerUri || authorizerUri,
+                    "authorizerCredentials": authorizer.authorizerCredentials || authorizerCredentials,
+                    "authorizerResultTtlInSeconds": authorizer.authorizerResultTtlInSeconds ?? 0
+                }
+            };
+        }
+    }
+
+    return definitions;
 }
 
 function buildSkeletonApiGateway(enviremnet) {
@@ -40,7 +58,7 @@ function buildSkeletonApiGateway(enviremnet) {
         skeleton["x-amazon-apigateway-policy"] = enviremnet["x-amazon-apigateway-policy"];
     }
     if (enviremnet.authorizerCredentials && enviremnet.authorizerUri) {
-        skeleton["securityDefinitions"] = buildSecurityDefinitions(enviremnet.authorizerUri, enviremnet.authorizerCredentials);
+        skeleton["securityDefinitions"] = buildSecurityDefinitions(enviremnet.authorizerUri, enviremnet.authorizerCredentials, enviremnet.securityDefinitions);
 
         skeleton["x-amazon-apigateway-request-validators"] = {
             "Validate query string parameters and headers": {
@@ -305,7 +323,7 @@ async function changeEnvironments(enviremnet) {
 
         // securityDefinitions: adiciona/atualiza ou remove conforme o ambiente tem authorizer
         if (enviremnet.authorizerCredentials && enviremnet.authorizerUri) {
-            updatedJson.securityDefinitions = buildSecurityDefinitions(enviremnet.authorizerUri, enviremnet.authorizerCredentials);
+            updatedJson.securityDefinitions = buildSecurityDefinitions(enviremnet.authorizerUri, enviremnet.authorizerCredentials, enviremnet.securityDefinitions);
         } else {
             delete updatedJson.securityDefinitions;
         }
