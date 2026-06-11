@@ -149,7 +149,7 @@ setupDropZone('dropZoneEnvironments', async (file) => {
 
 async function processConfigFile(file) {
     if (!file.name.endsWith('.json')) {
-        showMessage('Por favor, selecione um arquivo JSON', 'error');
+        showUploadError('Por favor, selecione um arquivo JSON');
         return;
     }
 
@@ -157,23 +157,31 @@ async function processConfigFile(file) {
     reader.onload = async (event) => {
         try {
             const jsonData = JSON.parse(event.target.result);
+
+            const validation = validateApiGatewayJson(jsonData);
+            if (!validation.valid) {
+                showUploadError(validation.message);
+                return;
+            }
+
             await dbSet(CONFIG_CONTENT_KEY, jsonData);
             fileInputName.textContent = file.name;
             markDropZoneHasFile('dropZoneConfig', file.name);
+            uploadErrorDiv.classList.add('hidden');
             displayConfig(jsonData);
             showMessage('Configuração salva com sucesso!', 'success');
         } catch (error) {
-            showMessage('Erro ao salvar configuração', 'error');
+            showUploadError('Erro: Arquivo JSON inválido');
             console.error('Erro ao processar JSON:', error);
         }
     };
-    reader.onerror = () => showMessage('Erro ao ler o arquivo', 'error');
+    reader.onerror = () => showUploadError('Erro ao ler o arquivo');
     reader.readAsText(file);
 }
 
 async function processGroupPathsFile(file) {
     if (!file.name.endsWith('.json')) {
-        showMessage('Por favor, selecione um arquivo JSON', 'error');
+        showUploadError('Por favor, selecione um arquivo JSON');
         return;
     }
 
@@ -183,7 +191,7 @@ async function processGroupPathsFile(file) {
             const jsonData = JSON.parse(event.target.result);
             const validation = validateGroupPathsStructure(jsonData);
             if (!validation.valid) {
-                showMessage(validation.message, 'error');
+                showUploadError(validation.message);
                 return;
             }
 
@@ -218,10 +226,16 @@ async function processGroupPathsFile(file) {
             clearGroupPathsBtn.classList.remove('hidden');
             fileInputGroupPathsName.textContent = file.name;
             markDropZoneHasFile('dropZoneGroupPaths', file.name);
+            uploadErrorDiv.classList.add('hidden');
+            // Reconstruir os radios para habilitar a troca de ambiente agora que grupos estão carregados
+            const configsCard = document.getElementById('configsApiGatewayCard');
+            if (!configsCard.classList.contains('hidden')) {
+                await renderApiGatewayEditers();
+            }
             renderGroupPaths(dataToSave);
             showMessage('JSON de grupos salvo com sucesso!', 'success');
         } catch {
-            showMessage('Erro: Arquivo JSON inválido', 'error');
+            showUploadError('Erro: Arquivo JSON inválido');
         }
     };
     reader.readAsText(file);
@@ -229,7 +243,7 @@ async function processGroupPathsFile(file) {
 
 async function processEnvironmentsFile(file) {
     if (!file.name.endsWith('.json')) {
-        showMessage('Por favor, selecione um arquivo JSON', 'error');
+        showUploadError('Por favor, selecione um arquivo JSON');
         return;
     }
 
@@ -237,15 +251,15 @@ async function processEnvironmentsFile(file) {
     reader.onload = async (event) => {
         try {
             const jsonData = JSON.parse(event.target.result);
-            if (!Array.isArray(jsonData)) {
-                showMessage('Erro: o arquivo de ambientes deve ser um array JSON', 'error');
+
+            const validation = validateEnvironmentsJson(jsonData);
+            if (!validation.valid) {
+                showUploadError(validation.message);
                 return;
             }
 
-            // Salva o conteúdo numa chave dedicada no IndexedDB
             await dbSet('environmentsContent', jsonData);
 
-            // Invalida o cache em memória para forçar recarga
             if (typeof _cachedEnvironments !== 'undefined') {
                 _cachedEnvironments = jsonData;
             }
@@ -253,12 +267,12 @@ async function processEnvironmentsFile(file) {
             clearEnvironmentsBtn.classList.remove('hidden');
             fileInputEnvironmentsName.textContent = file.name;
             markDropZoneHasFile('dropZoneEnvironments', file.name);
+            uploadErrorDiv.classList.add('hidden');
             showMessage('Ambientes carregados com sucesso!', 'success');
 
-            // Recarrega tudo para refletir os novos ambientes
             await loadSavedConfig();
         } catch (error) {
-            showMessage('Erro: Arquivo JSON inválido', 'error');
+            showUploadError('Erro: Arquivo JSON inválido');
             console.error('Erro ao processar environments.json:', error);
         }
     };
@@ -267,6 +281,19 @@ async function processEnvironmentsFile(file) {
 
 async function handleClearEnvironments() {
     try {
+        // Se o JSON do API Gateway é um skeleton (criado via seleção de ambiente), descarta junto
+        const currentJson = await dbGet('jsonConfigContent');
+        if (currentJson?._isSkeleton) {
+            await dbDelete('jsonConfigContent');
+            // Reset visual do dropzone do API Gateway
+            clearBtn.classList.add('hidden');
+            fileInput.value = '';
+            fileInputName.textContent = 'Nenhum arquivo';
+            markDropZoneHasFile('dropZoneConfig', null);
+            contentCard.classList.add('hidden');
+            pathsApiGatewayCard.classList.add('hidden');
+            document.getElementById('gatewayResponsesCard').classList.add('hidden');
+        }
         await dbDelete('environmentsContent');
         _cachedEnvironments = null;
     } catch (error) {
@@ -444,17 +471,25 @@ async function handleClearConfig() {
     markDropZoneHasFile('dropZoneConfig', null);
 
     // Restaurar estado visual do groupPaths e environments se ainda existem
-    if (groupPaths || environmentsData) {
+    if (environmentsData) {
+        // Tem ambientes (com ou sem grupos): mostra seletor
+        configsApiGatewayCard.classList.remove('hidden');
+        await renderApiGatewayEditers();
         if (groupPaths) {
             clearGroupPathsBtn.classList.remove('hidden');
             if (fileInputGroupPathsName.textContent === 'Nenhum arquivo') {
                 fileInputGroupPathsName.textContent = 'JSON carregado';
             }
+            renderGroupPaths(groupPaths);
         }
-        // Sem API Gateway mas com outros dados: mostra seletor de ambientes
-        configsApiGatewayCard.classList.remove('hidden');
-        await renderApiGatewayEditers();
-        if (groupPaths) renderGroupPaths(groupPaths);
+    } else if (groupPaths) {
+        // Só grupos sem ambientes: mostra grupos, esconde card de config
+        configsApiGatewayCard.classList.add('hidden');
+        clearGroupPathsBtn.classList.remove('hidden');
+        if (fileInputGroupPathsName.textContent === 'Nenhum arquivo') {
+            fileInputGroupPathsName.textContent = 'JSON carregado';
+        }
+        renderGroupPaths(groupPaths);
     }
 
     showMessage('Configuração limpa com sucesso!', 'success');
@@ -463,6 +498,19 @@ async function handleClearConfig() {
 // Limpar apenas o JSON de Grupos de Paths
 async function handleClearGroupPaths() {
     try {
+        // Se o JSON do API Gateway é um skeleton, descarta junto com os grupos
+        const currentJson = await dbGet('jsonConfigContent');
+        if (currentJson?._isSkeleton) {
+            await dbDelete('jsonConfigContent');
+            // Reset visual do dropzone do API Gateway
+            clearBtn.classList.add('hidden');
+            fileInput.value = '';
+            fileInputName.textContent = 'Nenhum arquivo';
+            markDropZoneHasFile('dropZoneConfig', null);
+            contentCard.classList.add('hidden');
+            pathsApiGatewayCard.classList.add('hidden');
+            document.getElementById('gatewayResponsesCard').classList.add('hidden');
+        }
         await dbDelete('groupPathsContent');
     } catch (error) {
         console.error('Erro ao limpar grupos de paths:', error);
@@ -476,6 +524,12 @@ async function handleClearGroupPaths() {
     markDropZoneHasFile('dropZoneGroupPaths', null);
 
     renderGroupPaths(null);
+
+    // Reconstruir os radios para refletir o novo estado (pode voltar a disabled)
+    const configsCard = document.getElementById('configsApiGatewayCard');
+    if (!configsCard.classList.contains('hidden')) {
+        await renderApiGatewayEditers();
+    }
 
     showMessage('JSON de grupos limpo com sucesso!', 'success');
 }
@@ -504,15 +558,18 @@ async function loadSavedConfig() {
         if (jsonData) {
             // displayConfig já chama renderGroupPaths no final, depois que loadConfigs termina
             await displayConfig(jsonData);
-        } else if (groupPaths) {
-            // Sem API Gateway, mostra seletor de ambientes e renderiza grupos sem badges
-            configsApiGatewayCard.classList.remove('hidden');
-            await renderApiGatewayEditers();
-            renderGroupPaths(groupPaths);
         } else if (environmentsData) {
-            // Só tem ambientes: mostra seletor de ambientes
+            // Tem ambientes (com ou sem grupos): mostra seletor de ambientes
             configsApiGatewayCard.classList.remove('hidden');
             await renderApiGatewayEditers();
+            if (groupPaths) renderGroupPaths(groupPaths);
+        } else if (groupPaths) {
+            // Só grupos, sem ambientes e sem API Gateway: mostra grupos, esconde card de config
+            configsApiGatewayCard.classList.add('hidden');
+            renderGroupPaths(groupPaths);
+        } else {
+            // Nada carregado: esconde tudo
+            configsApiGatewayCard.classList.add('hidden');
         }
     } catch (error) {
         console.error('Erro ao carregar configuração:', error);
@@ -522,11 +579,21 @@ async function loadSavedConfig() {
 
 // Exibir configuração
 async function displayConfig(jsonData) {
-    clearBtn.classList.remove('hidden');
-    if (!fileInputName.textContent || fileInputName.textContent === 'Nenhum arquivo') {
-        fileInputName.textContent = 'JSON carregado';
+    const isSkeleton = !!jsonData._isSkeleton;
+
+    // Só marca o dropzone do API Gateway como "com arquivo" se for um JSON real (não skeleton)
+    if (!isSkeleton) {
+        clearBtn.classList.remove('hidden');
+        if (!fileInputName.textContent || fileInputName.textContent === 'Nenhum arquivo') {
+            fileInputName.textContent = 'JSON carregado';
+        }
+        markDropZoneHasFile('dropZoneConfig', fileInputName.textContent);
+    } else {
+        // Skeleton: garantir que o dropzone fique limpo
+        clearBtn.classList.add('hidden');
+        fileInputName.textContent = 'Nenhum arquivo';
+        markDropZoneHasFile('dropZoneConfig', null);
     }
-    markDropZoneHasFile('dropZoneConfig', fileInputName.textContent);
 
     // Verificar se já existe groupPathsContent salvo
     const groupPaths = await dbGet('groupPathsContent');
@@ -542,7 +609,11 @@ async function displayConfig(jsonData) {
 
     restante = await loadConfigs(jsonData);
 
-    newJsonViewr(jsonContent, restante);
+    // Mostrar no viewer o objeto completo do IndexedDB (mesmo que sai no download), sem flag interna
+    const savedForViewer = await dbGet('jsonConfigContent');
+    const { _isSkeleton: _flag, ...cleanForViewer } = savedForViewer || {};
+    jsonContent.innerHTML = '';
+    newJsonViewr(jsonContent, cleanForViewer);
 
     contentCard.classList.remove('hidden');
 
@@ -671,15 +742,50 @@ async function loadPaths(paths) {
     }
 }
 
-// Mostrar mensagem
-function showMessage(text, type) {
-    messageDiv.textContent = text;
-    messageDiv.className = `message ${type}`;
+// Atualiza Paths do ApiGateway e Conteúdo do JSON sem reprocessar o objeto inteiro
+async function refreshPathsAndContent() {
+    const jsonConfigContent = await dbGet('jsonConfigContent');
+    if (!jsonConfigContent || !jsonConfigContent.paths) return;
+    loadPaths(jsonConfigContent.paths);
+    // Mostrar o mesmo conteúdo que seria gerado no download (sem a flag interna)
+    const { _isSkeleton, ...cleanData } = jsonConfigContent;
+    jsonContent.innerHTML = '';
+    newJsonViewr(jsonContent, cleanData);
+}
 
-    // Esconder mensagem após 5 segundos
-    setTimeout(() => {
+// Mostrar mensagem de sucesso (desaparece em 5s)
+let _messageTimeout = null;
+function showMessage(text, type) {
+    if (_messageTimeout) {
+        clearTimeout(_messageTimeout);
+        _messageTimeout = null;
+    }
+
+    messageDiv.textContent = text;
+    messageDiv.classList.remove('visible', 'success', 'error', 'hidden');
+    void messageDiv.offsetWidth;
+    messageDiv.classList.add(type, 'visible');
+
+    _messageTimeout = setTimeout(() => {
         messageDiv.classList.add('hidden');
+        messageDiv.classList.remove('visible');
+        _messageTimeout = null;
     }, 5000);
+}
+
+// Mostrar erro de upload dentro do card (não desaparece, tem botão ✕)
+const uploadErrorDiv  = document.getElementById('uploadError');
+const uploadErrorText = document.getElementById('uploadErrorText');
+document.getElementById('btnCloseUploadError').addEventListener('click', () => {
+    uploadErrorDiv.classList.add('hidden');
+});
+
+function showUploadError(text) {
+    uploadErrorText.textContent = text;
+    // Reinicia a animação mesmo se já estava visível
+    uploadErrorDiv.classList.add('hidden');
+    void uploadErrorDiv.offsetWidth;
+    uploadErrorDiv.classList.remove('hidden');
 }
 
 async function renderApiGatewayEditers() {
@@ -732,37 +838,52 @@ async function newDivRadio(container, checked = false, enviremnet = null) {
 
     var fixedEnvironmentsName = document.createElement("span");
     fixedEnvironmentsName.textContent = enviremnet.name;
-    btn.addEventListener("change", async () => {
-        if (btn.checked) {
-            const existingJson = await dbGet('jsonConfigContent');
-            if (!existingJson) {
-                const skeleton = buildSkeletonApiGateway(enviremnet);
-                await dbSet('jsonConfigContent', skeleton);
-                await dbSet('envName', enviremnet.name);
-                await dbSet('authorizerCredentials', enviremnet.authorizerCredentials);
-                await dbSet('authorizerUri', enviremnet.authorizerUri);
-                await dbSet('connectionId', enviremnet.connectionId);
-                await dbSet('host', enviremnet.host);
-                await dbSet('hostPortal', enviremnet.hostPortal);
-                await dbSet('nlb', enviremnet.nlb);
-            } else {
-                await changeEnvironments(enviremnet);
+
+    // Só permite selecionar se tiver API Gateway ou grupos carregados
+    const [existingJson, groupPaths] = await Promise.all([
+        dbGet('jsonConfigContent'),
+        dbGet('groupPathsContent')
+    ]);
+    const canSwitch = !!(existingJson || groupPaths);
+
+    if (!canSwitch) {
+        btn.disabled = true;
+        divButon.title = 'Carregue o JSON do API Gateway ou de Grupos para trocar de ambiente';
+        divButon.style.opacity = '0.5';
+        divButon.style.cursor = 'not-allowed';
+    } else {
+        btn.addEventListener("change", async () => {
+            if (btn.checked) {
+                const currentJson = await dbGet('jsonConfigContent');
+                if (!currentJson) {
+                    const skeleton = buildSkeletonApiGateway(enviremnet);
+                    await dbSet('jsonConfigContent', skeleton);
+                    await dbSet('envName', enviremnet.name);
+                    await dbSet('authorizerCredentials', enviremnet.authorizerCredentials);
+                    await dbSet('authorizerUri', enviremnet.authorizerUri);
+                    await dbSet('connectionId', enviremnet.connectionId);
+                    await dbSet('host', enviremnet.host);
+                    await dbSet('hostPortal', enviremnet.hostPortal);
+                    await dbSet('nlb', enviremnet.nlb);
+                } else {
+                    await changeEnvironments(enviremnet);
+                }
+                await loadSavedConfig();
             }
-            await loadSavedConfig()
-        }
-    });
-    if (await isCurrentEnviremnet(enviremnet)) {
-        btn.checked = true;
-        hiddenAllDivsEditFlags = true
+        });
+
+        divButon.addEventListener("dblclick", () => {
+            btn.checked = true;
+            btn.dispatchEvent(new Event("change"));
+        });
     }
 
-    divButon.addEventListener("dblclick", () => {
+    if (await isCurrentEnviremnet(enviremnet)) {
         btn.checked = true;
-        btn.dispatchEvent(new Event("change"));
-    });
+        hiddenAllDivsEditFlags = true;
+    }
 
     divButon.appendChild(fixedEnvironmentsName);
-
     container.appendChild(divButon);
 }
 
@@ -856,7 +977,9 @@ async function newDivDownload(container) {
             }
 
             const finalData = await dbGet('jsonConfigContent');
-            const jsonStr = JSON.stringify(finalData);
+            // Remover flag interna antes de serializar
+            const { _isSkeleton, ...cleanData } = finalData;
+            const jsonStr = JSON.stringify(cleanData);
             var blob = new Blob([jsonStr], { type: "application/json" });
             var url = URL.createObjectURL(blob);
             var a = document.createElement("a");
@@ -873,7 +996,21 @@ async function newDivDownload(container) {
 
         row.appendChild(btn);
     } else {
-        row.textContent = "Nenhum JSON salvo!";
+        // Verificar se tem ambientes ou grupos carregados para dar orientação
+        const groupPathsData = await dbGet('groupPathsContent');
+        const environmentsData = await dbGet('environmentsContent');
+
+        const hint = document.createElement('p');
+        hint.style.cssText = 'font-size:0.875rem;color:#718096;margin:0;line-height:1.6;';
+
+        if (environmentsData && !groupPathsData) {
+            hint.innerHTML = '✅ Ambientes carregados. Carregue o <strong>JSON de Grupos de Paths</strong> para visualizar e gerenciar os grupos, ou o <strong>JSON do API Gateway</strong> para habilitar a edição completa.';
+        } else if (environmentsData && groupPathsData) {
+            hint.innerHTML = '✅ Ambientes e grupos carregados. Carregue o <strong>JSON do API Gateway</strong> para habilitar a edição, validação dos grupos e o download do JSON final — ou <strong>selecione um ambiente</strong> para criar do zero.';
+        } else {
+            hint.textContent = 'Nenhum JSON salvo.';
+        }
+        row.appendChild(hint);
     }
     container.appendChild(row);
 }
@@ -939,28 +1076,32 @@ async function renderGroupPaths(groupPaths) {
 
     groupPathsCard.classList.remove('hidden');
 
-    // Mostrar skeletons no lugar dos cards reais (sem limpar o que já existe de vez)
-    const groupCount = Object.keys(groupPaths).length;
-    const skeletonFragment = document.createDocumentFragment();
-    const skeletonPanel = document.createElement('div');
-    skeletonPanel.classList.add('group-section-panel', 'skeleton-panel');
-    const skeletonGrid = document.createElement('div');
-    skeletonGrid.classList.add('group-section-grid');
-    for (let i = 0; i < Math.min(groupCount, 12); i++) {
-        const sk = document.createElement('div');
-        sk.classList.add('group-paths-item', 'skeleton-card');
-        sk.innerHTML = `<div class="sk-line sk-name"></div><div class="sk-line sk-meta"></div>`;
-        skeletonGrid.appendChild(sk);
+    // Skeleton só faz sentido se o API Gateway está carregado (precisa comparar paths)
+    const jsonConfigContent = await dbGet('jsonConfigContent');
+    const hasApiGateway = !!(jsonConfigContent && jsonConfigContent.paths);
+
+    if (hasApiGateway) {
+        const groupCount = Object.keys(groupPaths).length;
+        const skeletonFragment = document.createDocumentFragment();
+        const skeletonPanel = document.createElement('div');
+        skeletonPanel.classList.add('group-section-panel', 'skeleton-panel');
+        const skeletonGrid = document.createElement('div');
+        skeletonGrid.classList.add('group-section-grid');
+        for (let i = 0; i < Math.min(groupCount, 12); i++) {
+            const sk = document.createElement('div');
+            sk.classList.add('group-paths-item', 'skeleton-card');
+            sk.innerHTML = `<div class="sk-line sk-name"></div><div class="sk-line sk-meta"></div>`;
+            skeletonGrid.appendChild(sk);
+        }
+        skeletonPanel.appendChild(skeletonGrid);
+        skeletonFragment.appendChild(skeletonPanel);
+        groupPathsList.replaceChildren(skeletonFragment);
     }
-    skeletonPanel.appendChild(skeletonGrid);
-    skeletonFragment.appendChild(skeletonPanel);
-    groupPathsList.replaceChildren(skeletonFragment);
 
     // Processar tudo fora do DOM
     let apiGatewayPaths = null;
     let syncedGroupPaths = groupPaths;
     try {
-        const jsonConfigContent = await dbGet('jsonConfigContent');
         if (jsonConfigContent && jsonConfigContent.paths) {
             apiGatewayPaths = jsonConfigContent.paths;
 
@@ -1069,6 +1210,17 @@ async function renderGroupPaths(groupPaths) {
         actionSummary.textContent = `⚡ Grupos com ações disponíveis (${actionGroups.length})`;
 
         if (apiGatewayPaths) {
+            // Só mostra "Resolver tudo" se há ações que realmente modificam algo
+            const hasRealActions = actionGroups.some(({ validationResult, isDefault }) => {
+                if (!validationResult) return false;
+                const { status, divergentPaths } = validationResult;
+                return (isDefault && status === 'none-found')
+                    || status === 'partial'
+                    || (status === 'all-found' && divergentPaths.length > 0)
+                    || (!isDefault && status !== 'none-found');
+            });
+
+            if (hasRealActions) {
             const resolveAllBtn = document.createElement('button');
             resolveAllBtn.classList.add('group-action-btn', 'group-action-btn-resolve-all');
             resolveAllBtn.textContent = '⚡ Resolver tudo';
@@ -1085,13 +1237,10 @@ async function renderGroupPaths(groupPaths) {
                         const { status, divergentPaths } = validationResult;
 
                         if (status === 'none-found' && isDefault) {
-                            // Adicionar apenas grupos padrão ausentes
                             updatedPaths = addGroupPaths(updatedPaths, syncedGroupPaths[groupName]);
                         } else if (status === 'partial' || (status === 'all-found' && divergentPaths.length > 0)) {
-                            // Atualizar grupos parciais ou divergentes
                             updatedPaths = updateGroupPaths(updatedPaths, syncedGroupPaths[groupName]);
                         } else if (!isDefault && status !== 'none-found') {
-                            // Remover grupos não-padrão que estão presentes
                             const groupPathKeys = Object.keys(syncedGroupPaths[groupName]);
                             groupPathKeys.forEach(p => delete updatedPaths[p]);
                         }
@@ -1099,7 +1248,11 @@ async function renderGroupPaths(groupPaths) {
 
                     await dbSet('jsonConfigContent', { ...jsonConfigContent, paths: updatedPaths });
                     const gp = await dbGet('groupPathsContent');
-                    renderGroupPaths(gp);
+                    await renderGroupPaths(gp);
+                    // Fechar o painel de ações disponíveis
+                    const actionPanel = document.getElementById('group-panel-action');
+                    if (actionPanel) actionPanel.open = false;
+                    await refreshPathsAndContent();
                     showMessage('Todas as pendências foram resolvidas', 'success');
                 } catch (err) {
                     console.error('Erro ao resolver todas as pendências:', err);
@@ -1107,6 +1260,7 @@ async function renderGroupPaths(groupPaths) {
                 }
             });
             actionSummary.appendChild(resolveAllBtn);
+            } // fim hasRealActions
         }
 
         actionPanel.appendChild(actionSummary);
@@ -1227,7 +1381,8 @@ function renderGroupPathItem(container, groupName, pathCount, validationResult, 
                         const updatedPaths = addGroupPaths(jsonConfigContent.paths, groupPathsContent[groupName]);
                         await dbSet('jsonConfigContent', { ...jsonConfigContent, paths: updatedPaths });
                         const gp = await dbGet('groupPathsContent');
-                        renderGroupPaths(gp);
+                        await renderGroupPaths(gp);
+                        await refreshPathsAndContent();
                     } catch (err) {
                         console.error('Erro ao adicionar grupo:', err);
                         showMessage('Erro ao adicionar grupo', 'error');
@@ -1252,7 +1407,8 @@ function renderGroupPathItem(container, groupName, pathCount, validationResult, 
                             const updatedPaths = updateGroupPaths(jsonConfigContent.paths, groupPathsContent[groupName]);
                             await dbSet('jsonConfigContent', { ...jsonConfigContent, paths: updatedPaths });
                             const gp = await dbGet('groupPathsContent');
-                            renderGroupPaths(gp);
+                            await renderGroupPaths(gp);
+                            await refreshPathsAndContent();
                         } catch (err) {
                             console.error('Erro ao atualizar grupo:', err);
                             showMessage('Erro ao atualizar grupo', 'error');
@@ -1277,7 +1433,8 @@ function renderGroupPathItem(container, groupName, pathCount, validationResult, 
                         groupPathKeys.forEach(p => delete updatedPaths[p]);
                         await dbSet('jsonConfigContent', { ...jsonConfigContent, paths: updatedPaths });
                         const gp = await dbGet('groupPathsContent');
-                        renderGroupPaths(gp);
+                        await renderGroupPaths(gp);
+                        await refreshPathsAndContent();
                     } catch (err) {
                         console.error('Erro ao remover grupo do JSON:', err);
                         showMessage('Erro ao remover grupo do JSON', 'error');
@@ -1794,3 +1951,91 @@ async function showConfirmDialog(title, message) {
         cancelBtn.focus();
     });
 }
+
+// ─── Validação do JSON do API Gateway ────────────────────────────────────────
+
+/**
+ * Valida a estrutura básica esperada do JSON do API Gateway (Swagger/OpenAPI 2.0 AWS).
+ * @param {*} data - objeto já parseado
+ * @returns {{ valid: boolean, message: string }}
+ */
+function validateApiGatewayJson(data) {
+    if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+        return { valid: false, message: 'Erro: o JSON do API Gateway deve ser um objeto, não um array.' };
+    }
+    if (!data.paths || typeof data.paths !== 'object' || Array.isArray(data.paths)) {
+        return { valid: false, message: 'Erro: o JSON do API Gateway não contém a chave "paths" ou ela não é um objeto.' };
+    }
+    if (Object.keys(data.paths).length === 0) {
+        return { valid: false, message: 'Aviso: o JSON do API Gateway foi aceito, mas não contém nenhum path em "paths".' };
+    }
+    return { valid: true, message: '' };
+}
+
+/**
+ * Valida a estrutura básica esperada do JSON de Ambientes.
+ * @param {*} data - objeto já parseado
+ * @returns {{ valid: boolean, message: string }}
+ */
+function validateEnvironmentsJson(data) {
+    if (!Array.isArray(data)) {
+        return { valid: false, message: 'Erro: o arquivo de ambientes deve ser um array JSON ( [ ... ] ).' };
+    }
+    if (data.length === 0) {
+        return { valid: false, message: 'Erro: o array de ambientes está vazio.' };
+    }
+    const requiredFields = ['name', 'connectionId', 'nlb', 'host'];
+    const firstItem = data[0];
+    const missingFields = requiredFields.filter(f => !(f in firstItem));
+    if (missingFields.length > 0) {
+        return {
+            valid: false,
+            message: `Erro: o primeiro item do array de ambientes não contém os campos obrigatórios: ${missingFields.map(f => `"${f}"`).join(', ')}.`
+        };
+    }
+    return { valid: true, message: '' };
+}
+
+// ─── Setup dos modais de info/ajuda ──────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Helper genérico para abrir/fechar modal
+    function openModal(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('hidden');
+    }
+    function closeModal(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+    }
+    function bindModal(openBtnId, modalId, closeBtnId) {
+        const openBtn = document.getElementById(openBtnId);
+        const modal   = document.getElementById(modalId);
+        const closeBtn = document.getElementById(closeBtnId);
+        if (!openBtn || !modal) return;
+
+        openBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openModal(modalId);
+        });
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => closeModal(modalId));
+        }
+        // Fechar clicando no overlay
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal(modalId);
+        });
+        // Fechar com Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal(modalId);
+        });
+    }
+
+    // Modal de armazenamento local (ícone "i" no título)
+    bindModal('btnInfoStorage', 'modalStorage', 'btnCloseModalStorage');
+
+    // Modais de ajuda de cada drop-zone
+    bindModal('btnHelpConfig',      'modalHelpConfig',      'btnCloseModalHelpConfig');
+    bindModal('btnHelpEnvironments', 'modalHelpEnvironments', 'btnCloseModalHelpEnvironments');
+    bindModal('btnHelpGroupPaths',   'modalHelpGroupPaths',   'btnCloseModalHelpGroupPaths');
+});

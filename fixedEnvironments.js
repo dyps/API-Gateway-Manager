@@ -26,7 +26,8 @@ function buildSkeletonApiGateway(enviremnet) {
         "host": enviremnet.host || "",
         "basePath": enviremnet.basePath || "/",
         "schemes": ["https"],
-        "paths": {}
+        "paths": {},
+        "_isSkeleton": true
     };
 
     if (enviremnet["x-amazon-apigateway-security-policy"]) {

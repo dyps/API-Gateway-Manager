@@ -12,28 +12,20 @@
             <h1>API Gateway Manager</h1>
         </div>
 
-        <div id="message" class="message x"></div>
+        <div id="message" class="message hidden"></div>
 
         <div class="card ">
             <div class="card-header">
-                <h2>Enviar Arquivo JSON</h2>
+                <div class="section-title-row">
+                    <h2>Enviar Arquivos JSON</h2>
+                    <button class="info-icon-btn" id="btnInfoStorage" title="Informação sobre armazenamento">i</button>
+                </div>
             </div>
             <div class="card-content">
                 <div id="fileInputDiv" class="file-input-group">
-                    <!-- API Gateway JSON -->
-                    <div class="drop-zone" id="dropZoneConfig">
-                        <div class="drop-zone-icon">📄</div>
-                        <div class="drop-zone-label">JSON do API Gateway</div>
-                        <div class="drop-zone-hint">Arraste e solte ou clique para escolher</div>
-                        <span id="fileInputName" class="drop-zone-filename">Nenhum arquivo</span>
-                        <div class="drop-zone-actions">
-                            <button class="file-choose-btn" id="btnChooseConfig">Escolher arquivo</button>
-                            <button id="clearBtn" onclick="handleClearConfig()" class="clear-file-btn hidden">✕ Limpar</button>
-                        </div>
-                        <input type="file" id="fileInput" accept=".json" class="hidden">
-                    </div>
                     <!-- Environments JSON -->
                     <div class="drop-zone" id="dropZoneEnvironments">
+                        <button class="drop-zone-help-btn" id="btnHelpEnvironments" title="Sobre este JSON">?</button>
                         <div class="drop-zone-icon">🌍</div>
                         <div class="drop-zone-label">JSON de Ambientes</div>
                         <div class="drop-zone-hint">Arraste e solte ou clique para escolher</div>
@@ -46,6 +38,7 @@
                     </div>
                     <!-- Group Paths JSON -->
                     <div class="drop-zone" id="dropZoneGroupPaths">
+                        <button class="drop-zone-help-btn" id="btnHelpGroupPaths" title="Sobre este JSON">?</button>
                         <div class="drop-zone-icon">🗂️</div>
                         <div class="drop-zone-label">JSON de Grupos de Paths</div>
                         <div class="drop-zone-hint">Arraste e solte ou clique para escolher</div>
@@ -56,7 +49,87 @@
                         </div>
                         <input type="file" id="fileInputGroupPaths" accept=".json" class="hidden">
                     </div>
+                    <!-- API Gateway JSON -->
+                    <div class="drop-zone" id="dropZoneConfig">
+                        <button class="drop-zone-help-btn" id="btnHelpConfig" title="Sobre este JSON">?</button>
+                        <div class="drop-zone-icon">📄</div>
+                        <div class="drop-zone-label">JSON do API Gateway</div>
+                        <div class="drop-zone-hint">Arraste e solte ou clique para escolher</div>
+                        <span id="fileInputName" class="drop-zone-filename">Nenhum arquivo</span>
+                        <div class="drop-zone-actions">
+                            <button class="file-choose-btn" id="btnChooseConfig">Escolher arquivo</button>
+                            <button id="clearBtn" onclick="handleClearConfig()" class="clear-file-btn hidden">✕ Limpar</button>
+                        </div>
+                        <input type="file" id="fileInput" accept=".json" class="hidden">
+                    </div>
                 </div>
+                <!-- Área de erros de upload -->
+                <div id="uploadError" class="upload-error hidden">
+                    <span id="uploadErrorText"></span>
+                    <button class="upload-error-close" id="btnCloseUploadError">✕</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de informação de armazenamento local -->
+        <div class="modal-overlay hidden" id="modalStorage">
+            <div class="modal-box">
+                <button class="modal-close-btn" id="btnCloseModalStorage">✕</button>
+                <h3>🔒 Armazenamento local</h3>
+                <p>Os arquivos enviados aqui <strong>não são transmitidos para nenhum servidor</strong>. Eles são lidos diretamente pelo seu navegador e salvos no <strong>IndexedDB</strong> da sua máquina.</p>
+                <ul>
+                    <li>Nenhum dado é enviado para a internet.</li>
+                    <li>Os dados ficam disponíveis apenas neste navegador e neste dispositivo.</li>
+                    <li>Limpar os dados do navegador remove os arquivos salvos.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Modal de ajuda: JSON de Ambientes -->
+        <div class="modal-overlay hidden" id="modalHelpEnvironments">
+            <div class="modal-box">
+                <button class="modal-close-btn" id="btnCloseModalHelpEnvironments">✕</button>
+                <h3>🌍 JSON de Ambientes</h3>
+                <p>Array de objetos descrevendo os ambientes disponíveis (dev, homologação, produção, etc.). <strong>Carregue este primeiro</strong> — ele habilita a troca de ambiente e o preenchimento automático dos valores ao importar outros JSONs.</p>
+                <ul>
+                    <li>Deve ser um <strong>array</strong> JSON (<span class="modal-tag">[ ... ]</span>).</li>
+                    <li>Cada item representa um ambiente com seus valores específicos de <span class="modal-tag">host</span>, <span class="modal-tag">nlb</span>, <span class="modal-tag">connectionId</span>, <span class="modal-tag">authorizerUri</span>, etc.</li>
+                    <li>Com ele carregado, ao importar o JSON de Grupos ou o do API Gateway, os valores são substituídos automaticamente para o ambiente selecionado.</li>
+                    <li>Consulte o arquivo <span class="modal-tag">environments.example.json</span> para ver o formato esperado.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Modal de ajuda: JSON de Grupos de Paths -->
+        <div class="modal-overlay hidden" id="modalHelpGroupPaths">
+            <div class="modal-box">
+                <button class="modal-close-btn" id="btnCloseModalHelpGroupPaths">✕</button>
+                <h3>🗂️ JSON de Grupos de Paths</h3>
+                <p>Agrupa os paths do API Gateway em grupos nomeados para facilitar a gestão. <strong>Carregue antes do JSON do API Gateway</strong> para que os paths sejam exibidos organizados por grupo.</p>
+                <ul>
+                    <li>Deve ser um objeto onde cada chave é o <strong>nome do grupo</strong>.</li>
+                    <li>O valor de cada grupo é um objeto com os paths (<span class="modal-tag">/meu/path</span>) e suas configurações completas.</li>
+                    <li>Com o JSON de Ambientes carregado, os valores de ambiente dentro do arquivo são substituídos automaticamente.</li>
+                    <li>Sem o JSON do API Gateway, os grupos são exibidos mas sem status de validação (sem badges de divergência).</li>
+                    <li>Consulte o arquivo <span class="modal-tag">groupPaths.example.json</span> para ver o formato esperado.</li>
+                    <li>Exemplo: <span class="modal-tag">{ "MeuGrupo": { "/api/recurso": { ... } } }</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Modal de ajuda: JSON do API Gateway -->
+        <div class="modal-overlay hidden" id="modalHelpConfig">
+            <div class="modal-box">
+                <button class="modal-close-btn" id="btnCloseModalHelpConfig">✕</button>
+                <h3>📄 JSON do API Gateway</h3>
+                <p>Arquivo de configuração exportado diretamente do <strong>AWS API Gateway</strong> (formato Swagger/OpenAPI 2.0). É o JSON principal — habilita a edição de paths, validação dos grupos e o download do JSON final.</p>
+                <ul>
+                    <li>Deve ser um objeto JSON com a chave <span class="modal-tag">paths</span> contendo os endpoints.</li>
+                    <li>Obtido via console AWS → API Gateway → Exportar → <strong>Swagger + extensões AWS</strong>.</li>
+                    <li>Com o JSON de Ambientes carregado, o ambiente é detectado automaticamente pelo conteúdo do arquivo.</li>
+                    <li>Com o JSON de Grupos carregado, os paths são exibidos organizados por grupo e com badges de status.</li>
+                    <li>Campos esperados na raiz: <span class="modal-tag">host</span>, <span class="modal-tag">paths</span>, <span class="modal-tag">securityDefinitions</span>, etc.</li>
+                </ul>
             </div>
         </div>
     
