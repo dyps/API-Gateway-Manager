@@ -1589,47 +1589,33 @@ async function showEnvValuesDialog() {
         { label: "Host do portal deste ambiente", key: "hostPortal" },
     ];
 
-    // Remover dialog anterior se existir
     const existing = document.getElementById('envValuesDialog');
     if (existing) existing.remove();
 
     const overlay = document.createElement('div');
     overlay.id = 'envValuesDialog';
-    overlay.style.cssText = `
-        position:fixed;top:0;left:0;width:100%;height:100%;
-        background:rgba(0,0,0,0.5);display:flex;align-items:center;
-        justify-content:center;z-index:9999;
-    `;
+    overlay.classList.add('modal-overlay');
 
     const dialog = document.createElement('div');
-    dialog.style.cssText = `
-        background:#fff;border-radius:0.75rem;padding:1.5rem;
-        min-width:420px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.2);
-    `;
+    dialog.classList.add('modal-box', 'env-values-dialog');
 
     const title = document.createElement('h3');
     title.textContent = 'Valores do Ambiente Atual';
-    title.style.cssText = 'margin-bottom:1rem;font-size:1.1rem;color:#1a202c;';
     dialog.appendChild(title);
 
     for (const field of fields) {
         const value = (await dbGet(field.key)) ?? '(não definido)';
 
         const row = document.createElement('div');
-        row.style.cssText = 'margin-bottom:0.75rem;';
+        row.classList.add('env-values-row');
 
         const label = document.createElement('div');
         label.textContent = field.label;
-        label.style.cssText = 'font-size:0.75rem;color:#718096;margin-bottom:0.2rem;';
+        label.classList.add('env-values-label');
 
         const val = document.createElement('div');
         val.textContent = value;
-        val.style.cssText = `
-            font-size:0.85rem;color:#1a202c;background:#f7fafc;
-            border:1px solid #e2e8f0;border-radius:0.375rem;
-            padding:0.4rem 0.6rem;word-break:break-all;
-            font-family:'Monaco','Menlo','Ubuntu Mono',monospace;
-        `;
+        val.classList.add('env-values-value');
 
         row.appendChild(label);
         row.appendChild(val);
@@ -1638,7 +1624,7 @@ async function showEnvValuesDialog() {
 
     const closeBtn = document.createElement('button');
     closeBtn.textContent = 'Fechar';
-    closeBtn.style.cssText = 'margin-top:0.5rem;width:100%;';
+    closeBtn.classList.add('env-values-close-btn');
     closeBtn.onclick = () => overlay.remove();
     dialog.appendChild(closeBtn);
 
@@ -2039,3 +2025,28 @@ document.addEventListener('DOMContentLoaded', () => {
     bindModal('btnHelpEnvironments', 'modalHelpEnvironments', 'btnCloseModalHelpEnvironments');
     bindModal('btnHelpGroupPaths',   'modalHelpGroupPaths',   'btnCloseModalHelpGroupPaths');
 });
+
+// ─── Dark Mode ────────────────────────────────────────────────────────────────
+
+(function () {
+    const btn = document.getElementById('btnDarkMode');
+    const STORAGE_KEY = 'darkMode';
+
+    function applyDark(on) {
+        document.body.classList.toggle('dark', on);
+        btn.textContent = on ? '☀️' : '🌙';
+        btn.title = on ? 'Modo claro' : 'Modo escuro';
+    }
+
+    // Restaurar estado salvo (dark mode é o padrão)
+    const saved = localStorage.getItem(STORAGE_KEY);
+    applyDark(saved === null ? true : saved === 'true');
+    document.documentElement.classList.remove('dark-pre');
+
+    btn.addEventListener('click', () => {
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem(STORAGE_KEY, isDark);
+        btn.textContent = isDark ? '☀️' : '🌙';
+        btn.title = isDark ? 'Modo claro' : 'Modo escuro';
+    });
+})();

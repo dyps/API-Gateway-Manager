@@ -1,3 +1,7 @@
+html.dark-pre body {
+    background: linear-gradient(135deg, #0f1117 0%, #1a1f2e 100%) !important;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -11,7 +15,194 @@ body {
     background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
     min-height: 100vh;
     padding: 2rem 1rem;
-    overflow-y: scroll; /* scrollbar sempre visível, evita layout shift */
+    overflow-y: scroll;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ─── Dark Mode ──────────────────────────────────────────────────────────────*/
+
+body.dark {
+    background: linear-gradient(135deg, #0f1117 0%, #1a1f2e 100%);
+    color: #e2e8f0;
+}
+
+body.dark .card {
+    background: #1e2330;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+body.dark .card-header {
+    border-bottom-color: #2d3748;
+}
+
+body.dark .card-header h2 {
+    color: #e2e8f0;
+}
+
+body.dark .drop-zone {
+    background-color: #252c3b;
+    border-color: #3a4459;
+}
+
+body.dark .drop-zone.drag-over {
+    border-color: #818cf8;
+    background-color: #1e2540;
+}
+
+body.dark .drop-zone.has-file {
+    border-color: #4ade80;
+    background-color: #0f2a1a;
+}
+
+body.dark .drop-zone-label {
+    color: #e2e8f0;
+}
+
+body.dark .drop-zone-hint {
+    color: #64748b;
+}
+
+body.dark .drop-zone-filename {
+    color: #94a3b8;
+}
+
+body.dark .file-choose-btn,
+body.dark .clear-file-btn {
+    background-color: #2d3748;
+    color: #e2e8f0;
+}
+
+body.dark .file-choose-btn:hover {
+    background-color: #3a4459;
+}
+
+body.dark .clear-file-btn:hover:not(:disabled) {
+    background-color: #4a1a1a;
+    color: #fca5a5;
+}
+
+body.dark .upload-error {
+    background-color: #2d1515;
+    border-color: #7f1d1d;
+    color: #fca5a5;
+}
+
+body.dark .upload-error-close {
+    color: #fca5a5;
+}
+
+body.dark .info-icon-btn {
+    background-color: #6366f1;
+}
+
+body.dark .drop-zone-help-btn {
+    background-color: #4a5568;
+}
+
+body.dark .modal-box {
+    background: #1e2330;
+    color: #e2e8f0;
+}
+
+body.dark .modal-box h3 {
+    color: #e2e8f0;
+}
+
+body.dark .modal-box p,
+body.dark .modal-box li {
+    color: #94a3b8;
+}
+
+body.dark .modal-tag {
+    background: #1e2540;
+    color: #818cf8;
+}
+
+body.dark .modal-close-btn {
+    color: #64748b;
+}
+
+body.dark .modal-close-btn:hover {
+    color: #e2e8f0;
+    background: #2d3748;
+}
+
+body.dark .modal-overlay {
+    background: rgba(0,0,0,0.65);
+}
+
+body.dark .div-radio {
+    background-color: #2d3748;
+    color: #e2e8f0;
+}
+
+body.dark .paths-group-summary {
+    background: #2d3748;
+    color: #e2e8f0;
+}
+
+body.dark .paths-group-summary:hover {
+    background: #3a4459;
+}
+
+body.dark .paths-group-section {
+    border-color: #3a4459;
+}
+
+body.dark .path-box {
+    background-color: #252c3b;
+    border-color: #2d3748;
+}
+
+body.dark .downloadBtn,
+body.dark .clear-btn {
+    background-color: #2d3748;
+    color: #e2e8f0;
+}
+
+body.dark .downloadBtn:hover:not(:disabled),
+body.dark .clear-btn:hover:not(:disabled) {
+    background-color: #3a4459;
+}
+
+body.dark #configsApiGatewayCard .card-content p {
+    color: #94a3b8;
+}
+
+/* Botão de dark mode fixo */
+.dark-mode-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1100;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    border: none;
+    background: #e2e8f0;
+    color: #1a202c;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.dark-mode-toggle:hover {
+    background: #cbd5e0;
+    transform: scale(1.1);
+}
+
+body.dark .dark-mode-toggle {
+    background: #2d3748;
+    color: #e2e8f0;
+}
+
+body.dark .dark-mode-toggle:hover {
+    background: #3a4459;
 }
 
 .container {
@@ -1039,4 +1230,55 @@ details[open] > .paths-group-summary::before {
     font-weight: 600;
     padding: 0.15rem 0.45rem;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+body.dark .header h1 {
+    color: #e2e8f0;
+}
+
+.env-values-dialog {
+    min-width: 420px;
+    max-width: 90vw;
+}
+
+.env-values-dialog h3 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.env-values-row {
+    margin-bottom: 0.75rem;
+}
+
+.env-values-label {
+    font-size: 0.75rem;
+    color: #718096;
+    margin-bottom: 0.2rem;
+}
+
+.env-values-value {
+    font-size: 0.85rem;
+    color: #1a202c;
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    padding: 0.4rem 0.6rem;
+    word-break: break-all;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.env-values-close-btn {
+    margin-top: 0.5rem;
+    width: 100%;
+}
+
+/* Dark mode */
+body.dark .env-values-label {
+    color: #64748b;
+}
+
+body.dark .env-values-value {
+    color: #e2e8f0;
+    background: #252c3b;
+    border-color: #3a4459;
 }
