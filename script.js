@@ -292,6 +292,7 @@ async function handleClearEnvironments() {
             markDropZoneHasFile('dropZoneConfig', null);
             contentCard.classList.add('hidden');
             pathsApiGatewayCard.classList.add('hidden');
+            document.getElementById('topologyCard').classList.add('hidden');
             document.getElementById('gatewayResponsesCard').classList.add('hidden');
         }
         await dbDelete('environmentsContent');
@@ -464,6 +465,7 @@ async function handleClearConfig() {
     clearBtn.classList.add('hidden');
     configsApiGatewayCard.classList.add('hidden');
     pathsApiGatewayCard.classList.add('hidden');
+    document.getElementById('topologyCard').classList.add('hidden');
     document.getElementById('gatewayResponsesCard').classList.add('hidden');
 
     fileInput.value = '';
@@ -606,8 +608,12 @@ async function displayConfig(jsonData) {
 
     configsApiGatewayCard.classList.remove('hidden');
     pathsApiGatewayCard.classList.remove('hidden');
+    document.getElementById('topologyCard').classList.remove('hidden');
 
     restante = await loadConfigs(jsonData);
+
+    // Renderizar topologia
+    renderPathsTopology(document.getElementById('topologyContent'), jsonData.paths || {});
 
     // Mostrar no viewer o objeto completo do IndexedDB (mesmo que sai no download), sem flag interna
     const savedForViewer = await dbGet('jsonConfigContent');
@@ -747,6 +753,8 @@ async function refreshPathsAndContent() {
     const jsonConfigContent = await dbGet('jsonConfigContent');
     if (!jsonConfigContent || !jsonConfigContent.paths) return;
     loadPaths(jsonConfigContent.paths);
+    renderPathsTopology(document.getElementById('topologyContent'), jsonConfigContent.paths);
+    document.getElementById('topologyCard').classList.remove('hidden');
     // Mostrar o mesmo conteúdo que seria gerado no download (sem a flag interna)
     const { _isSkeleton, ...cleanData } = jsonConfigContent;
     jsonContent.innerHTML = '';
@@ -1201,26 +1209,25 @@ async function renderGroupPaths(groupPaths) {
     }
 
     if (actionGroups.length > 0) {
+        // Calcular se há ações reais (mesma regra do botão "Resolver tudo")
+        const hasRealActions = apiGatewayPaths && actionGroups.some(({ validationResult, isDefault }) => {
+            if (!validationResult) return false;
+            const { status, divergentPaths } = validationResult;
+            return (isDefault && status === 'none-found')
+                || status === 'partial'
+                || (status === 'all-found' && divergentPaths.length > 0)
+                || (!isDefault && status !== 'none-found');
+        });
+
         const actionPanel = document.createElement('details');
         actionPanel.classList.add('group-section-panel');
         actionPanel.id = 'group-panel-action';
-        actionPanel.open = true;
+        actionPanel.open = hasRealActions; // só abre se há pendências reais
         const actionSummary = document.createElement('summary');
         actionSummary.classList.add('group-section-summary', 'group-section-summary-action');
         actionSummary.textContent = `⚡ Grupos com ações disponíveis (${actionGroups.length})`;
 
-        if (apiGatewayPaths) {
-            // Só mostra "Resolver tudo" se há ações que realmente modificam algo
-            const hasRealActions = actionGroups.some(({ validationResult, isDefault }) => {
-                if (!validationResult) return false;
-                const { status, divergentPaths } = validationResult;
-                return (isDefault && status === 'none-found')
-                    || status === 'partial'
-                    || (status === 'all-found' && divergentPaths.length > 0)
-                    || (!isDefault && status !== 'none-found');
-            });
-
-            if (hasRealActions) {
+        if (hasRealActions) {
             const resolveAllBtn = document.createElement('button');
             resolveAllBtn.classList.add('group-action-btn', 'group-action-btn-resolve-all');
             resolveAllBtn.textContent = '⚡ Resolver tudo';
@@ -1261,7 +1268,6 @@ async function renderGroupPaths(groupPaths) {
             });
             actionSummary.appendChild(resolveAllBtn);
             } // fim hasRealActions
-        }
 
         actionPanel.appendChild(actionSummary);
         const actionGrid = document.createElement('div');
