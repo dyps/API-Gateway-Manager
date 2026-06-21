@@ -675,9 +675,9 @@ function renderPathsTopology(container, apiGatewayPaths) {
 
         const labelEl = document.createElement('div');
         labelEl.classList.add('tb-label');
-        labelEl.textContent = node.label.length > 28
-            ? node.label.slice(0, 26) + '…' : node.label;
-        if (node.label.length > 28) div.title = node.label;
+        labelEl.textContent = node.label.length > 46
+            ? node.label.slice(0, 44) + '…' : node.label;
+        if (node.label.length > 46) div.title = node.label;
         body.appendChild(labelEl);
 
         if (node.sublabel) {

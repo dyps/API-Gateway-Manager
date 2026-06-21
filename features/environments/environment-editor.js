@@ -1,7 +1,7 @@
-async function addAllDivApiGatewayEditer(container) {
+﻿async function renderEnvironmentFields(container) {
     // Só renderiza se nenhum ambiente fixo foi reconhecido
     for (const env of await getFixedEnvironments()) {
-        if (await isCurrentEnviremnet(env)) return;
+        if (await isCurrentEnvironment(env)) return;
     }
 
     const fields = [

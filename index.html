@@ -192,14 +192,40 @@
         </div>
     </div>
 
+    <!-- ═══ Nova estrutura modular ═══ -->
+
+    <!-- 1. Infraestrutura -->
     <script src="utils/storage.js"></script>
+    <script src="core/constants.js"></script>
+    <script src="core/state.js"></script>
+
+    <!-- 2. Utilitários e validação -->
     <script src="utils/group-paths-validator.js"></script>
-    <script src="script.js"></script>
-    <script src="jsonViewr.js"></script>
-    <script src="fixedEnvironments.js"></script>
-    <script src="components/editer-envirements.js"></script>
-    <script src="components/paths-topology.js"></script>
     <script src="utils/json-util.js"></script>
+    <script src="validation/validators.js"></script>
+    <script src="ui/messages.js"></script>
+    <script src="ui/dialogs.js"></script>
+    <script src="ui/dark-mode.js"></script>
+
+    <!-- 3. Features (serviços → lógica → renderização) -->
+    <script src="features/environments/skeleton-builder.js"></script>
+    <script src="features/environments/environment-service.js"></script>
+    <script src="features/upload/drop-zone.js"></script>
+    <script src="features/display/json-viewer.js"></script>
+    <script src="features/groups/group-logic.js"></script>
+    <script src="features/groups/group-renderer.js"></script>
+    <script src="features/gateway-responses/gateway-responses.js"></script>
+    <script src="features/paths/paths-renderer.js"></script>
+    <script src="features/paths/paths-topology.js"></script>
+    <script src="features/download/download.js"></script>
+    <script src="features/environments/environment-editor.js"></script>
+    <script src="features/environments/environment-ui.js"></script>
+    <script src="features/display/display-config.js"></script>
+    <script src="features/upload/file-processor.js"></script>
+    <script src="clear/clear-handlers.js"></script>
+
+    <!-- 4. Bootstrap (inicializa tudo) -->
+    <script src="core/bootstrap.js"></script>
 
 </body>
 </html>

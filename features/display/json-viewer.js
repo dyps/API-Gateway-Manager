@@ -1,5 +1,5 @@
-
-function newJsonViewr(container, path) {
+﻿
+function renderJsonTree(container, path) {
     if (Array.isArray(path)) {
 
         for (let i = 0; i < path.length; i++) {
@@ -114,7 +114,7 @@ function createObjectEditor (div, divObject, preInfo, obj, prefixInfo){
     // Função para carregar os filhos
     const loadChildren = () => {
         if (!childrenLoaded) {
-            newJsonViewr(divObject, obj);
+            renderJsonTree(divObject, obj);
             childrenLoaded = true;
             
             const posInfo = document.createElement("span");
