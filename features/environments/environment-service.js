@@ -64,14 +64,21 @@ async function isCurrentEnvironment(environment) {
 async function switchEnvironment(environment) {
     try {
         const jsonData = await dbGet('jsonConfigContent');
+        if (!jsonData) return;
+
         let json = JSON.stringify(jsonData);
 
         const currentConnectionId = await dbGet('connectionId');
         const currentHostPortal = await dbGet('hostPortal');
         const currentNlb = await dbGet('nlb');
 
-        json = json.replaceAll(currentConnectionId, environment.connectionId);
-        json = json.replaceAll(currentNlb, environment.nlb);
+        // Substituição global no JSON serializado (só se os valores atuais existem)
+        if (currentConnectionId && environment.connectionId) {
+            json = json.replaceAll(currentConnectionId, environment.connectionId);
+        }
+        if (currentNlb && environment.nlb) {
+            json = json.replaceAll(currentNlb, environment.nlb);
+        }
 
         const updatedJson = JSON.parse(json);
 
@@ -79,7 +86,8 @@ async function switchEnvironment(environment) {
             updatedJson.host = environment.host;
         }
 
-        if (environment.hostPortal) {
+        // hostPortal só em paths (Access-Control-Allow-Origin)
+        if (currentHostPortal && environment.hostPortal) {
             updatedJson.paths = JSON.parse(JSON.stringify(updatedJson.paths).replaceAll(currentHostPortal, environment.hostPortal));
         }
 
@@ -121,21 +129,31 @@ async function switchEnvironment(environment) {
             delete updatedJson.securityDefinitions;
         }
 
+        // Persistir todos os valores do novo ambiente no DB
         await dbSet('envName', environment.name);
-        await dbSet('authorizerCredentials', environment.authorizerCredentials);
-        await dbSet('authorizerUri', environment.authorizerUri);
-        await dbSet('connectionId', environment.connectionId);
-        await dbSet('host', environment.host);
-        await dbSet('hostPortal', environment.hostPortal);
-        await dbSet('nlb', environment.nlb);
+        await dbSet('authorizerCredentials', environment.authorizerCredentials || '');
+        await dbSet('authorizerUri', environment.authorizerUri || '');
+        await dbSet('connectionId', environment.connectionId || '');
+        await dbSet('host', environment.host || '');
+        await dbSet('hostPortal', environment.hostPortal || '');
+        await dbSet('nlb', environment.nlb || '');
         await dbSet('jsonConfigContent', updatedJson);
 
+        // Atualizar groupPathsContent — só connectionId, hostPortal e nlb
+        // (authorizerUri e authorizerCredentials NÃO existem dentro dos paths,
+        //  eles ficam em securityDefinitions na raiz do API Gateway JSON)
         const groupPathsData = await dbGet('groupPathsContent');
         if (groupPathsData) {
             let gpJson = JSON.stringify(groupPathsData);
-            gpJson = gpJson.replaceAll(currentConnectionId, environment.connectionId);
-            gpJson = gpJson.replaceAll(currentHostPortal, environment.hostPortal);
-            gpJson = gpJson.replaceAll(currentNlb, environment.nlb);
+            if (currentConnectionId && environment.connectionId) {
+                gpJson = gpJson.replaceAll(currentConnectionId, environment.connectionId);
+            }
+            if (currentHostPortal && environment.hostPortal) {
+                gpJson = gpJson.replaceAll(currentHostPortal, environment.hostPortal);
+            }
+            if (currentNlb && environment.nlb) {
+                gpJson = gpJson.replaceAll(currentNlb, environment.nlb);
+            }
             await dbSet('groupPathsContent', JSON.parse(gpJson));
         }
     } catch (error) {

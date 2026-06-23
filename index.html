@@ -140,6 +140,18 @@
             <div class="card-header" style="display:flex;align-items:center;gap:0.5rem;">
                 <h2>Configurações do ApiGateway</h2>
                 <span id="envViewerBtn" title="Ver valores do ambiente atual" style="cursor:pointer;font-size:1.2rem;user-select:none;">👀</span>
+                <span id="compareBtn" title="Comparar JSON" style="cursor:pointer;user-select:none;display:inline-flex;align-items:center;" onclick="openComparePopup()">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="2" y="3" width="8" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <rect x="14" y="10" width="8" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <path d="M10 7h2.5a1 1 0 011 1v2" stroke="#e6a817" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowY)"/>
+                        <path d="M14 17h-2.5a1 1 0 01-1-1v-2" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowB)"/>
+                        <defs>
+                            <marker id="arrowY" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0 0L6 3L0 6z" fill="#e6a817"/></marker>
+                            <marker id="arrowB" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M6 0L0 3L6 6z" fill="#3b82f6"/></marker>
+                        </defs>
+                    </svg>
+                </span>
             </div>
             <div id="configsApiGatewayEditers" class="card-content">
 
@@ -192,6 +204,49 @@
         </div>
     </div>
 
+    <!-- Modal de Comparação de JSON -->
+    <div class="modal-overlay hidden" id="modalCompare">
+        <div class="compare-popup">
+            <button class="modal-close-btn" onclick="closeComparePopup()">✕</button>
+            <h3>🔀 Comparar JSON</h3>
+
+            <!-- Área de upload -->
+            <div id="compareUploadArea" class="compare-upload-area">
+                <p class="compare-upload-hint">Envie o JSON de referência para comparar com o JSON que seria baixado.</p>
+                <div class="compare-upload-row">
+                    <button class="compare-choose-btn" onclick="document.getElementById('compareFileInput').click()">Escolher JSON de referência</button>
+                    <span id="compareFileName" class="compare-file-name">Nenhum arquivo</span>
+                </div>
+                <input type="file" id="compareFileInput" accept=".json" class="hidden" onchange="handleCompareFileUpload(event)">
+            </div>
+
+            <!-- Área de diff -->
+            <div id="compareDiffArea" class="compare-diff-area hidden">
+                <div class="compare-toolbar">
+                    <div class="compare-legend">
+                        <span class="compare-legend-item"><span class="cmp-legend-box cmp-legend-yellow"></span> Divergente</span>
+                        <span class="compare-legend-item"><span class="cmp-legend-box cmp-legend-red"></span> Só na referência</span>
+                        <span class="compare-legend-item"><span class="cmp-legend-box cmp-legend-green"></span> Só no download</span>
+                    </div>
+                    <div class="compare-toolbar-actions">
+                        <button class="compare-action-btn" onclick="replaceCompareReference()">📂 Substituir JSON</button>
+                        <button class="compare-action-btn compare-action-btn-danger" onclick="clearCompareReference()">🗑️ Limpar referência</button>
+                    </div>
+                </div>
+                <div class="compare-panels">
+                    <div class="compare-panel">
+                        <div class="compare-panel-header">📄 Referência (enviado)</div>
+                        <div class="compare-panel-content" id="compareLeftPanel"></div>
+                    </div>
+                    <div class="compare-panel">
+                        <div class="compare-panel-header">📄 Download (atual)</div>
+                        <div class="compare-panel-content" id="compareRightPanel"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ═══ Nova estrutura modular ═══ -->
 
     <!-- 1. Infraestrutura -->
@@ -217,6 +272,7 @@
     <script src="features/gateway-responses/gateway-responses.js"></script>
     <script src="features/paths/paths-renderer.js"></script>
     <script src="features/paths/paths-topology.js"></script>
+    <script src="features/compare/json-compare.js"></script>
     <script src="features/download/download.js"></script>
     <script src="features/environments/environment-editor.js"></script>
     <script src="features/environments/environment-ui.js"></script>
