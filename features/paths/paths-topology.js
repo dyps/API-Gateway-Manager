@@ -53,7 +53,7 @@ function extractPathInfo(pathConfig) {
         if (nlb && integrationType) break;
     }
     return {
-        authorizer: authorizer || '(sem autorizador)',
+        authorizer: authorizer || 'Sem Autorizador',
         nlb, port,
         integrationType: integrationType || 'unknown',
     };
@@ -78,8 +78,8 @@ function buildTopology(apiGatewayPaths) {
 
 // ─── Layout: calcula posição (x, y) de cada nó ───────────────────────────────
 
-function computeLayout(topology) {
-    const NO_AUTH = '(sem autorizador)';
+function computeLayout(topology, securityDefinitions) {
+    const NO_AUTH = 'Sem Autorizador';
 
     // Ordenar autorizadores: reais primeiro, sem-autorizador por último
     const sortedAuths = [...topology.keys()].sort((a, b) => {
@@ -94,13 +94,36 @@ function computeLayout(topology) {
     const rootNode = { id: 'root', type: 'root', label: 'API Gateway', col: 0 };
 
     // Col 1: Autorizadores
-    const authNodes = sortedAuths.map(auth => ({
-        id: `auth:${auth}`,
-        type: auth === NO_AUTH ? 'noauth' : 'authorizer',
-        label: auth,
-        col: 1,
-        auth,
-    }));
+    const authNodes = sortedAuths.map(auth => {
+        let authType = '';
+        let identitySource = '';
+        if (auth !== NO_AUTH && securityDefinitions && securityDefinitions[auth]) {
+            const def = securityDefinitions[auth];
+            const authorizerExt = def['x-amazon-apigateway-authorizer'] || {};
+            authType = authorizerExt.type || ''; // "token" ou "request"
+            const inType = def.in; // "header" ou "query"
+            const paramName = def.name; // ex: "Authorization"
+
+            if (inType && paramName) {
+                identitySource = `Em ${inType}: ${paramName}`;
+            } else if (inType) {
+                identitySource = `Em ${inType}`;
+            } else {
+                identitySource = 'Sem header ou param especificado';
+            }
+        } else if (auth !== NO_AUTH) {
+            identitySource = 'Sem header ou param especificado';
+        }
+        return {
+            id: `auth:${auth}`,
+            type: auth === NO_AUTH ? 'noauth' : 'authorizer',
+            label: auth,
+            sublabel: authType ? `Tipo: ${authType}` : undefined,
+            sublabel2: identitySource || undefined,
+            col: 1,
+            auth,
+        };
+    });
 
     // Col 2: Grupos de paths (auth × nlbPortKey)
     // Col 3: NLBs (deduplicados por hostname)
@@ -369,7 +392,7 @@ function elbowPath(x1, y1, x2, y2, midX) {
 
 // ─── Renderização SVG ─────────────────────────────────────────────────────────
 
-function renderPathsTopology(container, apiGatewayPaths) {
+function renderPathsTopology(container, apiGatewayPaths, securityDefinitions) {
     container.innerHTML = '';
 
     if (!apiGatewayPaths || Object.keys(apiGatewayPaths).length === 0) {
@@ -381,7 +404,7 @@ function renderPathsTopology(container, apiGatewayPaths) {
     }
 
     const topology = buildTopology(apiGatewayPaths);
-    const { allNodes, edges, nodeById, totalW, totalH } = computeLayout(topology);
+    const { allNodes, edges, nodeById, totalW, totalH } = computeLayout(topology, securityDefinitions);
 
     const dark = document.body.classList.contains('dark');
     const strokeColor  = dark ? '#475569' : '#94a3b8';
@@ -685,6 +708,12 @@ function renderPathsTopology(container, apiGatewayPaths) {
             sub.classList.add('tb-sub');
             sub.textContent = node.sublabel;
             body.appendChild(sub);
+        }
+        if (node.sublabel2) {
+            const sub2 = document.createElement('div');
+            sub2.classList.add('tb-sub');
+            sub2.textContent = node.sublabel2;
+            body.appendChild(sub2);
         }
         div.appendChild(body);
 

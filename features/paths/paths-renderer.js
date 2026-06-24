@@ -120,7 +120,7 @@ async function refreshPathsAndContent() {
     const jsonConfigContent = await dbGet('jsonConfigContent');
     if (!jsonConfigContent || !jsonConfigContent.paths) return;
     loadPaths(jsonConfigContent.paths);
-    renderPathsTopology(document.getElementById('topologyContent'), jsonConfigContent.paths);
+    renderPathsTopology(document.getElementById('topologyContent'), jsonConfigContent.paths, jsonConfigContent.securityDefinitions || {});
     document.getElementById('topologyCard').classList.remove('hidden');
     const { _isSkeleton, ...cleanData } = jsonConfigContent;
     document.getElementById('jsonContent').innerHTML = '';

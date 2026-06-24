@@ -69,9 +69,12 @@ async function displayConfig(jsonData) {
     document.getElementById('pathsApiGatewayCard').classList.remove('hidden');
     document.getElementById('topologyCard').classList.remove('hidden');
 
+    // Guardar securityDefinitions antes de loadConfigs deletar
+    const _secDefs = jsonData.securityDefinitions ? { ...jsonData.securityDefinitions } : {};
+
     await loadConfigs(jsonData);
 
-    renderPathsTopology(document.getElementById('topologyContent'), jsonData.paths || {});
+    renderPathsTopology(document.getElementById('topologyContent'), jsonData.paths || {}, _secDefs);
 
     const savedForViewer = await dbGet('jsonConfigContent');
     const { _isSkeleton: _flag, ...cleanForViewer } = savedForViewer || {};

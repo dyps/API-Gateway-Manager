@@ -8,11 +8,13 @@ const COMPARE_JSON_KEY = COMPARE_REFERENCE_KEY;
 async function openComparePopup() {
     const overlay = document.getElementById('modalCompare');
     overlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
     await renderCompareContent();
 }
 
 function closeComparePopup() {
     document.getElementById('modalCompare').classList.add('hidden');
+    document.body.style.overflow = '';
 }
 
 /**
