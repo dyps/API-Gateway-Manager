@@ -45,7 +45,7 @@ function extractPathInfo(pathConfig) {
         const integ = m['x-amazon-apigateway-integration'];
         if (integ) {
             integrationType = integ.type || null;
-            if (integ.uri && integ.type === 'http') {
+            if (integ.uri && (integ.type === 'http' || integ.type === 'http_proxy')) {
                 const match = integ.uri.match(/^https?:\/\/([^:/]+)(?::(\d+))?/);
                 if (match) { nlb = match[1]; port = match[2] || '80'; }
             }
