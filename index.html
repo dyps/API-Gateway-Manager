@@ -100,6 +100,7 @@
                     <li>Com ele carregado, ao importar o JSON de Grupos ou o do API Gateway, os valores são substituídos automaticamente para o ambiente selecionado.</li>
                     <li>Consulte o arquivo <span class="modal-tag">environments.example.json</span> para ver o formato esperado.</li>
                 </ul>
+                <a class="modal-download-btn" href="#" id="btnDownloadEnvExample">⬇ Baixar environments.example.json</a>
             </div>
         </div>
 
@@ -117,6 +118,7 @@
                     <li>Consulte o arquivo <span class="modal-tag">groupPaths.example.json</span> para ver o formato esperado.</li>
                     <li>Exemplo: <span class="modal-tag">{ "MeuGrupo": { "/api/recurso": { ... } } }</span></li>
                 </ul>
+                <a class="modal-download-btn" href="#" id="btnDownloadGpExample">⬇ Baixar groupPaths.example.json</a>
             </div>
         </div>
 
@@ -279,6 +281,10 @@
     <script src="features/display/display-config.js"></script>
     <script src="features/upload/file-processor.js"></script>
     <script src="clear/clear-handlers.js"></script>
+
+    <!-- 3.5 Exemplos embutidos (para download offline) -->
+    <script src="examples/environments-example.js"></script>
+    <script src="examples/group-paths-example.js"></script>
 
     <!-- 4. Bootstrap (inicializa tudo) -->
     <script src="core/bootstrap.js"></script>

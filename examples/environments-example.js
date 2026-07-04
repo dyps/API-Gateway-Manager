@@ -1,4 +1,7 @@
-[
+// ─── Conteúdo do environments.example.json embutido ──────────────────────────
+// Permite download mesmo em file:// (sem servidor).
+
+const ENVIRONMENTS_EXAMPLE = [
     {
         "name": "Meu Ambiente DEV",
         "title": "Api Gateway - DEV",
@@ -88,4 +91,4 @@
 
         "defaultGroups": ["Grupo A", "Grupo B"]
     }
-]
+];

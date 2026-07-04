@@ -93,6 +93,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ─── Carregar configuração ao abrir a página ──────────────────────────────────
 
+// Botões de download dos arquivos de exemplo (via Blob — funciona em file://)
+document.getElementById('btnDownloadEnvExample').addEventListener('click', (e) => {
+    e.preventDefault();
+    const json = JSON.stringify(ENVIRONMENTS_EXAMPLE, null, 4);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'environments.example.json';
+    a.click();
+    URL.revokeObjectURL(url);
+});
+
+document.getElementById('btnDownloadGpExample').addEventListener('click', (e) => {
+    e.preventDefault();
+    const json = JSON.stringify(GROUP_PATHS_EXAMPLE, null, 4);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'groupPaths.example.json';
+    a.click();
+    URL.revokeObjectURL(url);
+});
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Restaurar lista de autorizadores do IndexedDB
     const savedAuthNames = await dbGet('authorizerNames');

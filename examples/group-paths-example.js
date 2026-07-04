@@ -1,4 +1,7 @@
-{
+// ─── Conteúdo do groupPaths.example.json embutido ────────────────────────────
+// Permite download mesmo em file:// (sem servidor).
+
+const GROUP_PATHS_EXAMPLE = {
     "Meu Grupo A": {
         "/meu-servico/{proxy+}": {
             "options": {
@@ -136,4 +139,4 @@
             }
         }
     }
-}
+};

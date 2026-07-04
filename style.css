@@ -1471,6 +1471,40 @@ details[open] > .paths-group-summary::before {
     background: #f7fafc;
 }
 
+.modal-download-btn {
+    display: block;
+    margin-top: 1rem;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4f46e5;
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    box-sizing: border-box;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.modal-download-btn:hover {
+    background: #e0e7ff;
+    border-color: #a5b4fc;
+}
+
+body.dark .modal-download-btn {
+    color: #a5b4fc;
+    background: #1e1b4b;
+    border-color: #3730a3;
+}
+
+body.dark .modal-download-btn:hover {
+    background: #312e81;
+    border-color: #4f46e5;
+}
+
 .modal-tag {
     display: inline-block;
     background: #eef2ff;
