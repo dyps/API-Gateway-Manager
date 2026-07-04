@@ -734,6 +734,14 @@ function renderPathsTopology(container, apiGatewayPaths, securityDefinitions) {
             node.paths.forEach(p => {
                 const li = document.createElement('li');
                 li.textContent = p;
+                li.classList.add('topo-path-clickable');
+                li.title = 'Clique para filtrar em "Paths do ApiGateway"';
+                li.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (typeof setPathsFilter === 'function') {
+                        setPathsFilter(p);
+                    }
+                });
                 ul.appendChild(li);
             });
             panel.appendChild(ul);
@@ -775,6 +783,16 @@ function renderPathsTopology(container, apiGatewayPaths, securityDefinitions) {
                 clonedPanel.classList.remove('hidden');
                 const clonedUl = clonedPanel.querySelector('ul') || clonedPanel;
                 floatPanel.appendChild(clonedUl);
+
+                // Re-attach click listeners nos li (cloneNode não copia event listeners)
+                floatPanel.querySelectorAll('.topo-path-clickable').forEach(li => {
+                    li.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (typeof setPathsFilter === 'function') {
+                            setPathsFilter(li.textContent);
+                        }
+                    });
+                });
 
                 const closeFloatPanel = (e) => {
                     if (!floatPanel.contains(e.target) && !div.contains(e.target)) {

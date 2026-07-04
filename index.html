@@ -206,10 +206,16 @@
         </div>
 
         <div id="pathsApiGatewayCard" class="card hidden">
-            <div class="card-header">
-                <h2>Paths do ApiGateway</h2>
+            <div class="card-header card-header-collapsible" id="pathsApiGatewayHeader">
+                <div class="card-header-left">
+                    <span class="card-collapse-chevron">▶</span>
+                    <h2>Paths do ApiGateway</h2>
+                    <span class="paths-filter-icon">🔍</span>
+                    <input type="text" id="pathsFilterInput" class="paths-filter-input" placeholder="Filtrar paths..." />
+                    <button id="pathsFilterClear" class="paths-filter-clear hidden" title="Limpar filtro">✕</button>
+                </div>
             </div>
-            <div id="pathsApiGatewayDiv" class="card-content card-paths">
+            <div id="pathsApiGatewayDiv" class="card-content card-paths hidden">
 
             </div>
         </div>

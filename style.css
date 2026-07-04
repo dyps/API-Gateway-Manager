@@ -349,6 +349,107 @@ body.dark .dark-mode-toggle:hover {
     border-bottom: 1px solid #e2e8f0;
 }
 
+/* Collapsible card header */
+.card-header-collapsible {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+}
+
+.card-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-collapse-chevron {
+    font-size: 0.85rem;
+    color: #718096;
+    transition: transform 0.2s;
+}
+
+.card-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.paths-filter-icon {
+    font-size: 0.85rem;
+    user-select: none;
+}
+
+.paths-filter-input {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.4rem;
+    background: #fff;
+    color: #1a202c;
+    width: 280px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.paths-filter-input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.12);
+}
+
+.paths-filter-input::placeholder {
+    color: #a0aec0;
+}
+
+.paths-filter-clear {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #718096;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.3rem;
+    line-height: 1;
+}
+
+.paths-filter-clear:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+body.dark .card-collapse-chevron {
+    color: #94a3b8;
+}
+
+body.dark .paths-filter-input {
+    background: #1e2330;
+    border-color: #3a4459;
+    color: #e2e8f0;
+}
+
+body.dark .paths-filter-input:focus {
+    border-color: #818cf8;
+    box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
+}
+
+body.dark .paths-filter-input::placeholder {
+    color: #4a5568;
+}
+
+body.dark .paths-filter-clear {
+    color: #94a3b8;
+}
+
+body.dark .paths-filter-clear:hover {
+    background: #4a1a1a;
+    color: #fca5a5;
+}
+
+.card-header-collapsible h2 {
+    margin-bottom: 0;
+}
+
 .card-header h2 {
     font-size: 1.25rem;
     color: #1a202c;
@@ -1848,6 +1949,24 @@ body.dark .topo-paths-inline li {
 
 .topo-paths-inline li:last-child {
     border-bottom: none;
+}
+
+.topo-path-clickable {
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    border-radius: 0.25rem;
+    padding-left: 0.3rem;
+    padding-right: 0.3rem;
+}
+
+.topo-path-clickable:hover {
+    background: #e0e7ff;
+    color: #4338ca;
+}
+
+body.dark .topo-path-clickable:hover {
+    background: #312e81;
+    color: #c7d2fe;
 }
 
 /* ── Legenda */
