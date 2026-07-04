@@ -3,6 +3,45 @@
 
 let _cachedEnvironments = null;
 
+// ─── Extração de nomes de autorizadores usados nos paths ──────────────────────
+
+/**
+ * Extrai todos os nomes únicos de autorizadores referenciados no campo "security"
+ * dos métodos dos paths. Funciona tanto para paths planos (jsonData.paths) quanto
+ * para groupPaths (objeto de grupos → paths).
+ */
+function extractAuthorizerNamesFromPaths(paths) {
+    const names = new Set();
+    if (!paths || typeof paths !== 'object') return [];
+    for (const pathConfig of Object.values(paths)) {
+        for (const [method, methodConfig] of Object.entries(pathConfig || {})) {
+            if (method === 'options') continue;
+            if (Array.isArray(methodConfig?.security)) {
+                for (const secEntry of methodConfig.security) {
+                    for (const name of Object.keys(secEntry || {})) {
+                        names.add(name);
+                    }
+                }
+            }
+        }
+    }
+    return [...names];
+}
+
+/**
+ * Extrai nomes de autorizadores de um groupPaths (estrutura { grupo: { path: config } }).
+ */
+function extractAuthorizerNamesFromGroupPaths(groupPathsContent) {
+    const names = new Set();
+    if (!groupPathsContent || typeof groupPathsContent !== 'object') return [];
+    for (const groupPaths of Object.values(groupPathsContent)) {
+        for (const n of extractAuthorizerNamesFromPaths(groupPaths)) {
+            names.add(n);
+        }
+    }
+    return [...names];
+}
+
 async function getFixedEnvironments() {
     if (_cachedEnvironments) return _cachedEnvironments;
     try {
@@ -155,15 +194,71 @@ async function switchEnvironment(environment) {
 
 async function loadURIsLambda(jsonData) {
     if (jsonData.securityDefinitions) {
-        if (jsonData.securityDefinitions["lambda-authorizer"]) {
-            if (jsonData.securityDefinitions["lambda-authorizer"]["x-amazon-apigateway-authorizer"]) {
-                if (jsonData.securityDefinitions["lambda-authorizer"]["x-amazon-apigateway-authorizer"].authorizerUri) {
-                    await dbSet("authorizerUri", jsonData.securityDefinitions["lambda-authorizer"]["x-amazon-apigateway-authorizer"].authorizerUri);
-                }
-                if (jsonData.securityDefinitions["lambda-authorizer"]["x-amazon-apigateway-authorizer"].authorizerCredentials) {
-                    await dbSet("authorizerCredentials", jsonData.securityDefinitions["lambda-authorizer"]["x-amazon-apigateway-authorizer"].authorizerCredentials);
+        // Extrair nomes dos autorizadores dos paths carregados
+        const authNames = extractAuthorizerNamesFromPaths(jsonData.paths);
+        if (authNames.length > 0) {
+            window._authorizerNames = authNames;
+            await dbSet('authorizerNames', authNames);
+        }
+
+        // Inferir o autorizador primário: aquele com type "token" (header-based)
+        // ou, se só tem um, usa esse mesmo.
+        const secDefs = jsonData.securityDefinitions;
+        const defEntries = Object.entries(secDefs);
+        let primaryName = null;
+
+        if (defEntries.length === 1) {
+            primaryName = defEntries[0][0];
+        } else {
+            // Busca o que tem type "token" (padrão do API GW para header/Authorization)
+            for (const [name, def] of defEntries) {
+                const authExt = def['x-amazon-apigateway-authorizer'] || {};
+                if (authExt.type === 'token') {
+                    primaryName = name;
+                    break;
                 }
             }
+            // Se não achou token, compara com securityDefinitions do env ativo
+            // para encontrar o que NÃO é extra
+            if (!primaryName && authNames.length > 0) {
+                const envs = await getFixedEnvironments();
+                for (const env of envs) {
+                    const extraNames = env.securityDefinitions ? Object.keys(env.securityDefinitions) : [];
+                    if (extraNames.length > 0) {
+                        primaryName = authNames.find(n => !extraNames.includes(n));
+                        if (primaryName) break;
+                    }
+                }
+            }
+            // Fallback: primeiro authorizer encontrado nos paths
+            if (!primaryName) primaryName = authNames[0] || defEntries[0][0];
+        }
+
+        const primaryDef = secDefs[primaryName];
+        const missing = [];
+
+        if (primaryDef && primaryDef['x-amazon-apigateway-authorizer']) {
+            const authExt = primaryDef['x-amazon-apigateway-authorizer'];
+            if (authExt.authorizerUri) {
+                await dbSet("authorizerUri", authExt.authorizerUri);
+            } else {
+                await dbSet("authorizerUri", '');
+                missing.push('authorizerUri (Arn da Lambda)');
+            }
+            if (authExt.authorizerCredentials) {
+                await dbSet("authorizerCredentials", authExt.authorizerCredentials);
+            } else {
+                await dbSet("authorizerCredentials", '');
+                missing.push('authorizerCredentials (Arn da Credencial)');
+            }
+        } else {
+            await dbSet("authorizerUri", '');
+            await dbSet("authorizerCredentials", '');
+            missing.push('authorizerUri (Arn da Lambda)', 'authorizerCredentials (Arn da Credencial)');
+        }
+
+        if (missing.length > 0) {
+            showUploadError(`Autorizador "${primaryName}": não encontrado no JSON — ${missing.join(', ')}`);
         }
     }
 

@@ -13,6 +13,17 @@ async function handleClearEnvironments() {
             document.getElementById('pathsApiGatewayCard').classList.add('hidden');
             document.getElementById('topologyCard').classList.add('hidden');
             document.getElementById('gatewayResponsesCard').classList.add('hidden');
+
+            // Recalcular authorizerNames sem o skeleton
+            const groupPaths = await dbGet('groupPathsContent');
+            if (groupPaths) {
+                const authNames = extractAuthorizerNamesFromGroupPaths(groupPaths);
+                window._authorizerNames = authNames;
+                await dbSet('authorizerNames', authNames);
+            } else {
+                window._authorizerNames = [];
+                await dbDelete('authorizerNames');
+            }
         }
         await dbDelete('environmentsContent');
         _cachedEnvironments = null;
@@ -39,6 +50,12 @@ async function handleClearConfig() {
         await dbClear();
         if (groupPaths) {
             await dbSet('groupPathsContent', groupPaths);
+            // Recalcular authorizerNames do groupPaths que sobrou
+            const authNames = extractAuthorizerNamesFromGroupPaths(groupPaths);
+            window._authorizerNames = authNames;
+            await dbSet('authorizerNames', authNames);
+        } else {
+            window._authorizerNames = [];
         }
         if (environmentsData) {
             await dbSet('environmentsContent', environmentsData);
@@ -101,6 +118,15 @@ async function handleClearGroupPaths() {
             document.getElementById('gatewayResponsesCard').classList.add('hidden');
         }
         await dbDelete('groupPathsContent');
+        // Recalcular authorizerNames a partir do JSON principal (se existir)
+        if (currentJson && !currentJson._isSkeleton && currentJson.paths) {
+            const authNames = extractAuthorizerNamesFromPaths(currentJson.paths);
+            window._authorizerNames = authNames;
+            await dbSet('authorizerNames', authNames);
+        } else {
+            window._authorizerNames = [];
+            await dbDelete('authorizerNames');
+        }
     } catch (error) {
         console.error('Erro ao limpar grupos de paths:', error);
         showMessage('Erro ao limpar JSON de grupos', 'error');

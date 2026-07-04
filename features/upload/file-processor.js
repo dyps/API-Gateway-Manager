@@ -18,6 +18,16 @@ async function processConfigFile(file) {
             }
 
             await dbSet(CONFIG_CONTENT_KEY, jsonData);
+
+            // Extrair e salvar nomes dos autorizadores encontrados nos paths
+            const authNamesFromPaths = extractAuthorizerNamesFromPaths(jsonData.paths);
+            if (authNamesFromPaths.length > 0) {
+                const existing = await dbGet('authorizerNames') || [];
+                const merged = [...new Set([...existing, ...authNamesFromPaths])];
+                window._authorizerNames = merged;
+                await dbSet('authorizerNames', merged);
+            }
+
             document.getElementById('fileInputName').textContent = file.name;
             markDropZoneHasFile('dropZoneConfig', file.name);
             document.getElementById('uploadError').classList.add('hidden');
@@ -76,6 +86,17 @@ async function processGroupPathsFile(file) {
             }
 
             await dbSet('groupPathsContent', dataToSave);
+
+            // Extrair e salvar nomes dos autorizadores usados nos paths dos grupos
+            const authNames = extractAuthorizerNamesFromGroupPaths(dataToSave);
+            if (authNames.length > 0) {
+                // Mesclar com nomes já salvos (podem ter vindo do JSON principal)
+                const existing = await dbGet('authorizerNames') || [];
+                const merged = [...new Set([...existing, ...authNames])];
+                window._authorizerNames = merged;
+                await dbSet('authorizerNames', merged);
+            }
+
             document.getElementById('clearGroupPathsBtn').classList.remove('hidden');
             document.getElementById('fileInputGroupPathsName').textContent = file.name;
             markDropZoneHasFile('dropZoneGroupPaths', file.name);

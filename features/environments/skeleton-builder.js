@@ -1,9 +1,27 @@
 // ─── Construção de skeleton e security definitions ───────────────────────────
 // Movido de fixedEnvironments.js — funções puras sem side effects.
 
-function buildSecurityDefinitions(authorizerUri, authorizerCredentials, securityDefinitions) {
+function buildSecurityDefinitions(authorizerUri, authorizerCredentials, securityDefinitions, primaryAuthName) {
+    // Determinar o nome do autorizador primário.
+    // Se não informado, inferir: o que NÃO está em securityDefinitions extras é o primário.
+    // Fallback: primeiro nome encontrado em authorizerNames salvo, ou "lambda-authorizer".
+    let resolvedPrimaryName = primaryAuthName;
+
+    if (!resolvedPrimaryName) {
+        // Se há securityDefinitions extras, o primário é o que NÃO está lá
+        const extraNames = securityDefinitions ? Object.keys(securityDefinitions) : [];
+        const savedNames = window._authorizerNames || [];
+        if (savedNames.length > 0 && extraNames.length > 0) {
+            resolvedPrimaryName = savedNames.find(n => !extraNames.includes(n)) || savedNames[0];
+        } else if (savedNames.length > 0) {
+            resolvedPrimaryName = savedNames[0];
+        } else {
+            resolvedPrimaryName = 'lambda-authorizer';
+        }
+    }
+
     const definitions = {
-        "lambda-authorizer": {
+        [resolvedPrimaryName]: {
             "type": "apiKey",
             "name": "Authorization",
             "in": "header",

@@ -94,5 +94,13 @@ document.addEventListener('DOMContentLoaded', () => {
 // ─── Carregar configuração ao abrir a página ──────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Restaurar lista de autorizadores do IndexedDB
+    const savedAuthNames = await dbGet('authorizerNames');
+    if (savedAuthNames && Array.isArray(savedAuthNames)) {
+        window._authorizerNames = savedAuthNames;
+    } else {
+        window._authorizerNames = [];
+    }
+
     await loadSavedConfig();
 });

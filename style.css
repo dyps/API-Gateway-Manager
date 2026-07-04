@@ -1533,6 +1533,25 @@ body.dark .env-values-value {
     border-color: #3a4459;
 }
 
+.env-values-missing {
+    color: #c53030;
+    font-style: italic;
+}
+
+body.dark .env-values-missing {
+    color: #fc8181;
+}
+
+.env-values-hint {
+    font-size: 0.75rem;
+    color: #a0aec0;
+    font-style: normal;
+}
+
+body.dark .env-values-hint {
+    color: #718096;
+}
+
 /* ─── Topologia dos Paths ────────────────────────────────────────────────────*/
 
 /* Layout geral */

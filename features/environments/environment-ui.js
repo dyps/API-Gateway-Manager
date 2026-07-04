@@ -255,7 +255,7 @@ async function showEnvValuesDialog() {
     dialog.appendChild(title);
 
     for (const field of fields) {
-        const value = (await dbGet(field.key)) ?? '(não definido)';
+        const value = (await dbGet(field.key)) ?? '';
 
         const row = document.createElement('div');
         row.classList.add('env-values-row');
@@ -265,8 +265,19 @@ async function showEnvValuesDialog() {
         label.classList.add('env-values-label');
 
         const val = document.createElement('div');
-        val.textContent = value;
         val.classList.add('env-values-value');
+
+        if (value) {
+            val.textContent = value;
+        } else {
+            val.textContent = '(não definido)';
+            val.classList.add('env-values-missing');
+
+            const hint = document.createElement('span');
+            hint.classList.add('env-values-hint');
+            hint.textContent = ' — não encontrado no JSON';
+            val.appendChild(hint);
+        }
 
         row.appendChild(label);
         row.appendChild(val);

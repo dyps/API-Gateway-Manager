@@ -19,7 +19,7 @@
     {
         "name": "Meu Ambiente DEV (com autorizador extra)",
         "title": "Api Gateway - DEV",
-        "description": "Exemplo com dois autorizadores. O lambda-authorizer (header/token) é sempre gerado automaticamente a partir de authorizerUri e authorizerCredentials. Autorizadores adicionais são declarados em securityDefinitions — authorizerUri e authorizerCredentials herdam os valores do ambiente se omitidos.",
+        "description": "Exemplo com dois autorizadores. O autorizador primário (header/token) é detectado automaticamente: se o JSON/groupPaths tiver apenas um, esse será o primário. Se tiver vários, o que NÃO aparece em securityDefinitions do environment é considerado o primário (usa authorizerUri e authorizerCredentials da raiz). Autorizadores declarados em securityDefinitions herdam authorizerUri e authorizerCredentials do ambiente se omitidos.",
         "basePath": "/dev",
         "x-amazon-apigateway-security-policy": "TLS_1_0",
 
