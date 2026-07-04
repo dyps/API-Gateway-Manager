@@ -130,12 +130,35 @@ async function renderDownloadSection(container) {
             var url = URL.createObjectURL(blob);
             var a = document.createElement("a");
             a.href = url;
-            var envName = await dbGet('envName');
-            if (!envName) envName = "NãoDefinido";
+
+            // Montar nome do arquivo
+            const envName = await dbGet('envName');
+            const host = cleanData.host || await dbGet('host') || '';
             const now = new Date();
             const pad = n => String(n).padStart(2, '0');
             const timestamp = `${pad(now.getDate())}-${pad(now.getMonth()+1)}-${now.getFullYear()}_${pad(now.getHours())}h${pad(now.getMinutes())}`;
-            a.download = `API Gateway Ambiente-${envName}_${timestamp}.json`;
+
+            // Extrair apiId e região do host (formato: ABCDEFGH.execute-api.us-east-1.amazonaws.com)
+            let apiId = '';
+            let region = '';
+            const hostMatch = host.match(/^([^.]+)\.execute-api\.([^.]+)\.amazonaws\.com/);
+            if (hostMatch) {
+                apiId = hostMatch[1];
+                region = hostMatch[2];
+            }
+
+            let filename;
+            if (envName && apiId) {
+                filename = `API Gateway - ${envName} - ${apiId} - ${region} - ${timestamp}.json`;
+            } else if (apiId) {
+                filename = `API Gateway - ${apiId} - ${region} - ${timestamp}.json`;
+            } else if (envName) {
+                filename = `API Gateway - ${envName} - ${timestamp}.json`;
+            } else {
+                filename = `API Gateway - ${timestamp}.json`;
+            }
+
+            a.download = filename;
             a.click();
             URL.revokeObjectURL(url);
         };
