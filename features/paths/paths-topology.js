@@ -31,7 +31,7 @@ const COL_GAP   = 80;
 // Espaço vertical entre nós da mesma coluna
 const ROW_GAP   = 16;
 // Padding externo do SVG
-const SVG_PAD   = 24;
+const SVG_PAD   = 60;
 
 // ─── Extração de dados ────────────────────────────────────────────────────────
 
@@ -249,10 +249,13 @@ function computeLayout(topology, securityDefinitions) {
         authNodes[i].h = authH;
     }
 
-    // Root: centrado na totalidade dos nós
-    const globalYEnd = currentY - ROW_GAP;
+    // Root: centrado na faixa total dos blocos de autorizadores
+    const allBlockStarts = [...authBlockY.values()].map(b => b.yStart);
+    const allBlockEnds   = [...authBlockY.values()].map(b => b.yEnd);
+    const globalYStart = Math.min(...allBlockStarts);
+    const globalYEnd   = Math.max(...allBlockEnds);
     const rootH = BALLOON_SIZES.root.h;
-    rootNode.y = Math.round((SVG_PAD + globalYEnd) / 2 - rootH / 2);
+    rootNode.y = Math.round((globalYStart + globalYEnd) / 2 - rootH / 2);
     rootNode.h = rootH;
 
     // NLBs: posicionar centrado na faixa Y de todos os paths que apontam para ele
@@ -741,6 +744,10 @@ function renderPathsTopology(container, apiGatewayPaths, securityDefinitions) {
                 if (existingPanel) {
                     existingPanel.remove();
                     chevron.textContent = '▼';
+                    // Restaurar altura do SVG e wrapper
+                    svg.setAttribute('height', totalH);
+                    svg.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
+                    wrapper.style.minHeight = '';
                     return;
                 }
                 chevron.textContent = '▲';
@@ -773,11 +780,26 @@ function renderPathsTopology(container, apiGatewayPaths, securityDefinitions) {
                     if (!floatPanel.contains(e.target) && !div.contains(e.target)) {
                         floatPanel.remove();
                         chevron.textContent = '▼';
+                        // Restaurar altura do SVG e wrapper
+                        svg.setAttribute('height', totalH);
+                        svg.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
+                        wrapper.style.minHeight = '';
                         document.removeEventListener('click', closeFloatPanel);
                     }
                 };
                 setTimeout(() => document.addEventListener('click', closeFloatPanel), 0);
                 wrapper.appendChild(floatPanel);
+
+                // Expandir SVG e wrapper se o painel ultrapassa o limite inferior
+                requestAnimationFrame(() => {
+                    const panelBottom = panelTop + 4 + floatPanel.offsetHeight + 16;
+                    if (panelBottom > totalH) {
+                        const newH = panelBottom;
+                        svg.setAttribute('height', newH);
+                        svg.setAttribute('viewBox', `0 0 ${totalW} ${newH}`);
+                        wrapper.style.minHeight = newH + 'px';
+                    }
+                });
             });
         }
 

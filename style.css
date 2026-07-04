@@ -1811,8 +1811,7 @@ body.dark .tb-mock       { background: #422006; border-color: #ca8a04; color: #f
     border: 1px solid #e2e8f0;
     border-radius: 0.5rem;
     padding: 0.4rem 0.6rem;
-    max-height: 200px;
-    overflow-y: auto;
+    overflow-y: visible;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     animation: slideDown 0.15s ease-out;
     width: 280px;       /* mais largo que o balloon para ler os paths */
