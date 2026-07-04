@@ -6,23 +6,15 @@ let _cachedEnvironments = null;
 async function getFixedEnvironments() {
     if (_cachedEnvironments) return _cachedEnvironments;
     try {
-        // Prioridade 1: arquivo carregado pelo usuário via UI (salvo no IndexedDB)
+        // Arquivo carregado pelo usuário via UI (salvo no IndexedDB)
         const fromDb = await dbGet('environmentsContent');
         if (fromDb && Array.isArray(fromDb) && fromDb.length > 0) {
             _cachedEnvironments = fromDb;
             return _cachedEnvironments;
         }
-    } catch (_) { /* IndexedDB ainda não disponível, segue pro fetch */ }
+    } catch (_) { /* IndexedDB ainda não disponível */ }
 
-    try {
-        // Prioridade 2: arquivo environments.json local (não versionado)
-        const response = await fetch('environments.json');
-        if (!response.ok) throw new Error(`HTTP ${response.status} ao carregar environments.json`);
-        _cachedEnvironments = await response.json();
-    } catch (err) {
-        console.warn('environments.json não encontrado ou inválido. Carregue o arquivo pela interface.', err);
-        _cachedEnvironments = [];
-    }
+    _cachedEnvironments = [];
     return _cachedEnvironments;
 }
 
@@ -175,11 +167,24 @@ async function loadURIsLambda(jsonData) {
         }
     }
 
-    const vpcLinkEntry = Object.values(jsonData.paths || {}).find(p =>
-        p["x-amazon-apigateway-any-method"]?.["x-amazon-apigateway-integration"]?.connectionType === "VPC_LINK"
-    );
-    if (vpcLinkEntry) {
-        const integration = vpcLinkEntry["x-amazon-apigateway-any-method"]["x-amazon-apigateway-integration"];
+    // Buscar primeiro path com integração VPC_LINK em qualquer método
+    let vpcLinkEntry = null;
+    let vpcLinkMethod = null;
+    for (const pathConfig of Object.values(jsonData.paths || {})) {
+        for (const method of Object.keys(pathConfig)) {
+            if (method === 'options') continue;
+            const integ = pathConfig[method]?.['x-amazon-apigateway-integration'];
+            if (integ?.connectionType === 'VPC_LINK') {
+                vpcLinkEntry = pathConfig;
+                vpcLinkMethod = method;
+                break;
+            }
+        }
+        if (vpcLinkEntry) break;
+    }
+
+    if (vpcLinkEntry && vpcLinkMethod) {
+        const integration = vpcLinkEntry[vpcLinkMethod]["x-amazon-apigateway-integration"];
         if (integration.uri) {
             const nlbMatch = integration.uri.match(/^(https?:\/\/[^:/]+)/);
             await dbSet("nlb", nlbMatch ? nlbMatch[1] : integration.uri);
@@ -195,12 +200,12 @@ async function loadURIsLambda(jsonData) {
         if (optionsOrigin) {
             await dbSet("hostPortal", optionsOrigin);
         } else {
-            const anyMethodOrigin = vpcLinkEntry["x-amazon-apigateway-any-method"]
+            const methodOrigin = vpcLinkEntry[vpcLinkMethod]
                 ?.["x-amazon-apigateway-integration"]
                 ?.responses?.default
                 ?.responseParameters?.["method.response.header.Access-Control-Allow-Origin"];
-            if (anyMethodOrigin) {
-                await dbSet("hostPortal", anyMethodOrigin);
+            if (methodOrigin) {
+                await dbSet("hostPortal", methodOrigin);
             }
         }
     }

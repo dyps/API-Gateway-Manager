@@ -2210,3 +2210,85 @@ body.dark .cmp-val-null { color: #64748b; }
         padding: 1rem;
     }
 }
+
+/* ─── Environment Fields (Config Panel) ──────────────────────────────────────*/
+
+.env-fields-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.env-field-card {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    padding: 0.6rem 0.8rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.env-field-card:hover {
+    border-color: #6366f1;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+}
+
+.env-field-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.3rem;
+}
+
+.env-field-icon {
+    font-size: 0.85rem;
+    line-height: 1;
+}
+
+.env-field-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.env-field-value {
+    font-size: 0.82rem;
+    color: #1a202c;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    word-break: break-all;
+    line-height: 1.4;
+    padding: 0.3rem 0.5rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.3rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Dark mode */
+body.dark .env-fields-grid {
+    /* grid layout doesn't need dark override */
+}
+
+body.dark .env-field-card {
+    background: #252c3b;
+    border-color: #3a4459;
+}
+
+body.dark .env-field-card:hover {
+    border-color: #818cf8;
+    box-shadow: 0 2px 8px rgba(129, 140, 248, 0.12);
+}
+
+body.dark .env-field-label {
+    color: #94a3b8;
+}
+
+body.dark .env-field-value {
+    color: #e2e8f0;
+    background: #1e2330;
+    border-color: #3a4459;
+}

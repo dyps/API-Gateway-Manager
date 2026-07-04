@@ -5,36 +5,53 @@
     }
 
     const fields = [
-        { label: "Host:", key: "host" },
-        { label: "Arn da Lambda:", key: "authorizerUri" },
-        { label: "Arn da Credencial da Lambda:", key: "authorizerCredentials" },
-        { label: "Id do vpc link:", key: "connectionId" },
-        { label: "NLB:", key: "nlb" },
-        { label: "Host do portal deste ambiente:", key: "hostPortal" },
+        { label: "Host", key: "host", icon: "🌐" },
+        { label: "Arn da Lambda", key: "authorizerUri", icon: "🔐" },
+        { label: "Arn da Credencial", key: "authorizerCredentials", icon: "🔑" },
+        { label: "VPC Link ID", key: "connectionId", icon: "🔗" },
+        { label: "NLB", key: "nlb", icon: "⚡" },
+        { label: "Host Portal", key: "hostPortal", icon: "🖥️" },
     ];
 
+    // Filtrar campos que têm valor
+    const fieldsWithValue = [];
     for (const field of fields) {
         const value = (await dbGet(field.key)) ?? '';
-        if (!value) continue;
-
-        const row = document.createElement("div");
-        row.classList.add("div-edit-flags");
-
-        const rowName = document.createElement("div");
-        rowName.classList.add("name-edit-item");
-        const confName = document.createElement("span");
-        confName.textContent = field.label;
-        rowName.appendChild(confName);
-
-        const input = document.createElement("input");
-        input.id = "inputConfigsApiGW" + field.key;
-        input.type = "text";
-        input.value = value;
-        input.readOnly = true;
-        input.className = "inputConfigsApiGW";
-
-        row.appendChild(rowName);
-        row.appendChild(input);
-        container.appendChild(row);
+        if (value) fieldsWithValue.push({ ...field, value });
     }
+
+    if (fieldsWithValue.length === 0) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('env-fields-grid', 'div-edit-flags');
+
+    for (const field of fieldsWithValue) {
+        const card = document.createElement('div');
+        card.classList.add('env-field-card');
+
+        const header = document.createElement('div');
+        header.classList.add('env-field-header');
+
+        const icon = document.createElement('span');
+        icon.classList.add('env-field-icon');
+        icon.textContent = field.icon;
+        header.appendChild(icon);
+
+        const label = document.createElement('span');
+        label.classList.add('env-field-label');
+        label.textContent = field.label;
+        header.appendChild(label);
+
+        card.appendChild(header);
+
+        const valueEl = document.createElement('div');
+        valueEl.classList.add('env-field-value');
+        valueEl.textContent = field.value;
+        valueEl.title = field.value;
+        card.appendChild(valueEl);
+
+        wrapper.appendChild(card);
+    }
+
+    container.appendChild(wrapper);
 }
