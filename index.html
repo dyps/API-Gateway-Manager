@@ -9,6 +9,7 @@
     <script>if(localStorage.getItem('darkMode')!=='false')document.documentElement.classList.add('dark-pre');</script>
 </head>
 <body>
+    <script>if(document.documentElement.classList.contains('dark-pre'))document.body.classList.add('dark');</script>
     <button id="btnDarkMode" class="dark-mode-toggle" title="Alternar modo escuro">🌙</button>
     <div class="container">
         <div class="header">
@@ -128,9 +129,26 @@
                 <button class="modal-close-btn" id="btnCloseModalHelpConfig">✕</button>
                 <h3>📄 JSON do API Gateway</h3>
                 <p>Arquivo de configuração exportado diretamente do <strong>AWS API Gateway</strong> (formato Swagger/OpenAPI 2.0). É o JSON principal — habilita a edição de paths, validação dos grupos e o download do JSON final.</p>
-                <ul>
+
+                <h4 style="margin-top:1rem;margin-bottom:0.5rem;">Como exportar pelo Console AWS</h4>
+                <ol class="modal-steps">
+                    <li>Acesse o <strong>AWS Console</strong> → serviço <strong>API Gateway</strong>.</li>
+                    <li>Selecione sua REST API.</li>
+                    <li>No menu lateral, clique em <strong>Stages</strong>.</li>
+                    <li>Selecione o stage desejado (ex: <span class="modal-tag">dev</span>, <span class="modal-tag">prod</span>).</li>
+                    <li>Clique em <strong>Stage actions</strong> → <strong>Export</strong>.</li>
+                    <li>No popup de exportação, selecione:
+                        <ul>
+                            <li>API specification type: <strong>Swagger</strong></li>
+                            <li>Format: <strong>JSON</strong></li>
+                            <li>Extensions: <strong>Export with API Gateway extensions</strong></li>
+                        </ul>
+                    </li>
+                    <li>Clique em <strong>Export API</strong> e salve o arquivo.</li>
+                </ol>
+
+                <ul style="margin-top:0.75rem;">
                     <li>Deve ser um objeto JSON com a chave <span class="modal-tag">paths</span> contendo os endpoints.</li>
-                    <li>Obtido via console AWS → API Gateway → Exportar → <strong>Swagger + extensões AWS</strong>.</li>
                     <li>Com o JSON de Ambientes carregado, o ambiente é detectado automaticamente pelo conteúdo do arquivo.</li>
                     <li>Com o JSON de Grupos carregado, os paths são exibidos organizados por grupo e com badges de status.</li>
                     <li>Campos esperados na raiz: <span class="modal-tag">host</span>, <span class="modal-tag">paths</span>, <span class="modal-tag">securityDefinitions</span>, etc.</li>

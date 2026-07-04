@@ -79,6 +79,52 @@ async function renderDownloadSection(container) {
 
             const finalData = await dbGet('jsonConfigContent');
             const { _isSkeleton, ...cleanData } = finalData;
+
+            // Aplicar valores editados manualmente (quando não há ambiente fixo)
+            const manualHost = await dbGet('host');
+            if (manualHost) cleanData.host = manualHost;
+
+            const manualAuthorizerUri = await dbGet('authorizerUri');
+            const manualAuthorizerCredentials = await dbGet('authorizerCredentials');
+            if (manualAuthorizerUri || manualAuthorizerCredentials) {
+                cleanData.securityDefinitions = buildSecurityDefinitions(
+                    manualAuthorizerUri || '',
+                    manualAuthorizerCredentials || '',
+                    cleanData.securityDefinitions
+                );
+            }
+
+            const manualConnectionId = await dbGet('connectionId');
+            const manualNlb = await dbGet('nlb');
+            const manualHostPortal = await dbGet('hostPortal');
+            if (manualConnectionId || manualNlb || manualHostPortal) {
+                let pathsStr = JSON.stringify(cleanData.paths || {});
+                if (manualConnectionId) {
+                    // Substituir connectionId existente ou inserir
+                    const currentConnId = cleanData.paths
+                        ? JSON.stringify(cleanData.paths).match(/"connectionId"\s*:\s*"([^"]+)"/)?.[1]
+                        : null;
+                    if (currentConnId && currentConnId !== manualConnectionId) {
+                        pathsStr = pathsStr.replaceAll(currentConnId, manualConnectionId);
+                    }
+                }
+                if (manualNlb) {
+                    const nlbMatch = pathsStr.match(/"uri"\s*:\s*"(https?:\/\/[^:/]+)/);
+                    const currentNlb = nlbMatch ? nlbMatch[1] : null;
+                    if (currentNlb && currentNlb !== manualNlb) {
+                        pathsStr = pathsStr.replaceAll(currentNlb, manualNlb);
+                    }
+                }
+                if (manualHostPortal) {
+                    const originMatch = pathsStr.match(/"method\.response\.header\.Access-Control-Allow-Origin"\s*:\s*"([^"]+)"/);
+                    const currentHostPortal = originMatch ? originMatch[1] : null;
+                    if (currentHostPortal && currentHostPortal !== manualHostPortal) {
+                        pathsStr = pathsStr.replaceAll(currentHostPortal, manualHostPortal);
+                    }
+                }
+                cleanData.paths = JSON.parse(pathsStr);
+            }
+
             const jsonStr = JSON.stringify(cleanData);
             var blob = new Blob([jsonStr], { type: "application/json" });
             var url = URL.createObjectURL(blob);

@@ -1451,6 +1451,23 @@ details[open] > .paths-group-summary::before {
     margin-bottom: 0.3rem;
 }
 
+.modal-steps {
+    padding-left: 1.5rem;
+    margin-top: 0.5rem;
+    counter-reset: step;
+}
+
+.modal-steps li {
+    margin-bottom: 0.4rem;
+    line-height: 1.5;
+}
+
+.modal-steps ul {
+    margin-top: 0.25rem;
+    padding-left: 1.25rem;
+    list-style: disc;
+}
+
 .modal-close-btn {
     position: absolute;
     top: 0.75rem;
@@ -2319,6 +2336,19 @@ body.dark .cmp-val-null { color: #64748b; }
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.env-field-value:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+.env-field-value::placeholder {
+    color: #a0aec0;
+    font-style: italic;
 }
 
 /* Dark mode */
@@ -2344,4 +2374,13 @@ body.dark .env-field-value {
     color: #e2e8f0;
     background: #1e2330;
     border-color: #3a4459;
+}
+
+body.dark .env-field-value:focus {
+    border-color: #818cf8;
+    box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
+}
+
+body.dark .env-field-value::placeholder {
+    color: #4a5568;
 }
