@@ -127,5 +127,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         window._authorizerNames = [];
     }
 
+    // ─── Animação de entrada dos cards (slide-down) ──────────────────────────
+    // Observa quando um card remove a classe "hidden" e adiciona animação.
+    // Ignora o card de upload (primeiro .card sem id específico de show/hide).
+    const animatedCardIds = [
+        'configsApiGatewayCard', 'groupPathsCard', 'gatewayResponsesCard',
+        'topologyCard', 'pathsApiGatewayCard', 'contentCard'
+    ];
+    const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                const el = mutation.target;
+                if (!animatedCardIds.includes(el.id)) continue;
+                if (!el.classList.contains('hidden') && !el.classList.contains('card-enter')) {
+                    el.classList.add('card-enter');
+                    el.addEventListener('animationend', () => {
+                        el.classList.remove('card-enter');
+                    }, { once: true });
+                }
+            }
+        }
+    });
+    animatedCardIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) observer.observe(el, { attributes: true, attributeFilter: ['class'] });
+    });
+
     await loadSavedConfig();
 });
