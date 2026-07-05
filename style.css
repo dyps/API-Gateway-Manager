@@ -221,23 +221,27 @@ body.dark .dark-mode-toggle:hover {
     font-size: 1rem;
     color: #4a5568;
 }
-
-.message {
+.div-message{
     position: fixed;
     top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    left: 0%;
+    width: 100%;
+    z-index: 999;
+    display: flex;
+    justify-content: center;
+}
+
+.message {    
     padding: 0.75rem 1.25rem;
     border-radius: 0.5rem;
     font-weight: 500;
-    z-index: 999;
     max-width: 90vw;
     text-align: center;
     pointer-events: none;
 }
 
 .message.visible {
-    animation: slideIn 0.3s ease-in-out;
+    animation: slideIn 0.8s ease-in-out;
 }
 
 /* Erro de upload — dentro do card, abaixo dos drop-zones */
@@ -323,7 +327,7 @@ body.dark .dark-mode-toggle:hover {
 @keyframes slideIn {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-40px);
     }
 
     to {
@@ -338,6 +342,21 @@ body.dark .dark-mode-toggle:hover {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     margin-bottom: 1.5rem;
     overflow: hidden;
+}
+
+.card.card-enter {
+    animation: cardSlideDown 0.8s ease-out both;
+}
+
+@keyframes cardSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .hidden {
@@ -895,7 +914,7 @@ body.dark .env-restore-popup-btn:hover {
     color: #2d3748;
     border: none;
     border-radius: 0.375rem;
-    font-size: 0.875rem;
+    font-size: 0.782rem;
     font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
@@ -1078,8 +1097,9 @@ button:disabled {
 }
 
 .group-paths-count {
-    font-size: 0.78rem;
+    font-size: 0.612rem;
     color: #888;
+    width: 37px;
 }
 
 /* Group Status Badge */
