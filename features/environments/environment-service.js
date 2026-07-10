@@ -61,22 +61,24 @@ async function isCurrentEnvironment(environment) {
     try {
         var dif = [];
 
-        if (await dbGet('authorizerCredentials') !== environment.authorizerCredentials) {
+        const normalize = (v) => v || '';
+
+        if (normalize(await dbGet('authorizerCredentials')) !== normalize(environment.authorizerCredentials)) {
             dif.push("authorizerCredentials");
         }
-        if (await dbGet('authorizerUri') !== environment.authorizerUri) {
+        if (normalize(await dbGet('authorizerUri')) !== normalize(environment.authorizerUri)) {
             dif.push("authorizerUri");
         }
-        if (await dbGet('connectionId') !== environment.connectionId) {
+        if (normalize(await dbGet('connectionId')) !== normalize(environment.connectionId)) {
             dif.push("connectionId");
         }
-        if (await dbGet('host') !== environment.host) {
+        if (normalize(await dbGet('host')) !== normalize(environment.host)) {
             dif.push("host");
         }
-        if (await dbGet('hostPortal') !== environment.hostPortal) {
+        if (normalize(await dbGet('hostPortal')) !== normalize(environment.hostPortal)) {
             dif.push("hostPortal");
         }
-        if (await dbGet('nlb') !== environment.nlb) {
+        if (normalize(await dbGet('nlb')) !== normalize(environment.nlb)) {
             dif.push("nlb");
         }
 

@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         window._authorizerNames = [];
     }
 
-    // ─── Animação de entrada dos cards (slide-down) ──────────────────────────
+    // ─── Animação de entrada dos cards (reveal bottom-to-top) ──────────────
     // Observa quando um card remove a classe "hidden" e adiciona animação.
     // Ignora o card de upload (primeiro .card sem id específico de show/hide).
     const animatedCardIds = [
@@ -152,6 +152,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         const el = document.getElementById(id);
         if (el) observer.observe(el, { attributes: true, attributeFilter: ['class'] });
     });
+
+    // Função global para disparar animação em cards já visíveis (ex: troca de ambiente)
+    window.animateCard = function(cardId) {
+        const el = document.getElementById(cardId);
+        if (!el || el.classList.contains('hidden')) return;
+        el.classList.remove('card-enter');
+        // Force reflow para reiniciar a animação
+        void el.offsetWidth;
+        el.classList.add('card-enter');
+        el.addEventListener('animationend', () => {
+            el.classList.remove('card-enter');
+        }, { once: true });
+    };
 
     await loadSavedConfig();
 });

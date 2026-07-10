@@ -115,8 +115,9 @@ function createEnvironmentCard(environment, isCurrent, canSwitch) {
     }
 
     // Click no card = selecionar ambiente
-    if (canSwitch && !isCurrent) {
+    if (canSwitch) {
         card.addEventListener('click', async () => {
+            if (card.classList.contains('env-card-active')) return;
             await selectEnvironment(environment);
         });
     }
@@ -136,10 +137,107 @@ async function selectEnvironment(environment) {
         await dbSet('host', environment.host);
         await dbSet('hostPortal', environment.hostPortal);
         await dbSet('nlb', environment.nlb);
-    } else {
-        await switchEnvironment(environment);
+        await loadSavedConfig();
+        return;
     }
-    await loadSavedConfig();
+
+    // Tem JSON existente — troca de ambiente sem re-renderizar o config panel do zero
+    await switchEnvironment(environment);
+
+    // Verificar se a troca foi bem-sucedida
+    const success = await isCurrentEnvironment(environment);
+    if (!success) {
+        console.warn('switchEnvironment: verificação pós-troca falhou para', environment.name);
+        // A troca já aconteceu no DB — recarregar tudo para refletir o estado real
+        await loadSavedConfig();
+        showMessage('Ambiente trocado com divergências — verifique os valores', 'error');
+        return;
+    }
+
+    // Atualizar apenas o botão ativo no seletor de ambientes (sem re-renderizar o painel)
+    updateActiveEnvironmentCard(environment.name);
+
+    // Re-renderizar os componentes dependentes do JSON (com animação)
+    const updatedJson = await dbGet('jsonConfigContent');
+    if (updatedJson && updatedJson.paths) {
+        // Paths do API Gateway
+        await loadPaths(updatedJson.paths);
+        if (window.animateCard) window.animateCard('pathsApiGatewayCard');
+
+        // Topologia
+        const secDefs = updatedJson.securityDefinitions || {};
+        renderPathsTopology(document.getElementById('topologyContent'), updatedJson.paths, secDefs);
+        document.getElementById('topologyCard').classList.remove('hidden');
+        if (window.animateCard) window.animateCard('topologyCard');
+
+        // Gateway Responses
+        await renderGatewayResponses();
+        if (window.animateCard) window.animateCard('gatewayResponsesCard');
+
+        // Conteúdo do JSON
+        const { _isSkeleton, ...cleanData } = updatedJson;
+        const jsonContent = document.getElementById('jsonContent');
+        jsonContent.innerHTML = '';
+        renderJsonTree(jsonContent, cleanData);
+        document.getElementById('contentCard').classList.remove('hidden');
+        if (window.animateCard) window.animateCard('contentCard');
+
+        // Grupos de Paths
+        const groupPaths = await dbGet('groupPathsContent');
+        if (groupPaths) {
+            await renderGroupPaths(groupPaths);
+            if (window.animateCard) window.animateCard('groupPathsCard');
+        }
+    }
+}
+
+/** Atualiza visualmente o card ativo sem re-renderizar o painel inteiro */
+function updateActiveEnvironmentCard(envName) {
+    const grid = document.querySelector('.env-selector-grid');
+    if (!grid) return;
+
+    grid.querySelectorAll('.env-card').forEach(card => {
+        const nameEl = card.querySelector('.env-card-name');
+        if (!nameEl) return;
+
+        const isTarget = nameEl.textContent === envName;
+
+        if (isTarget) {
+            card.classList.add('env-card-active');
+            card.classList.remove('env-card-disabled');
+            // Adicionar badge se não existir
+            const body = card.querySelector('.env-card-body');
+            if (body && !body.querySelector('.env-card-badge')) {
+                const badge = document.createElement('span');
+                badge.classList.add('env-card-badge');
+                badge.textContent = '● ativo';
+                body.appendChild(badge);
+            }
+            // Remover botão de ocultar (não faz sentido no ativo)
+            const hideBtn = card.querySelector('.env-card-hide-btn');
+            if (hideBtn) hideBtn.remove();
+        } else {
+            card.classList.remove('env-card-active');
+            // Remover badge se existir
+            const badge = card.querySelector('.env-card-badge');
+            if (badge) badge.remove();
+            // Adicionar botão de ocultar se não existir
+            if (!card.querySelector('.env-card-hide-btn')) {
+                const hideBtn = document.createElement('button');
+                hideBtn.classList.add('env-card-hide-btn');
+                hideBtn.textContent = '✕';
+                hideBtn.title = `Ocultar "${nameEl.textContent}"`;
+                hideBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    await hideEnvironmentCard(nameEl.textContent);
+                });
+                card.appendChild(hideBtn);
+            }
+        }
+    });
+
+    // Esconder campos de edição quando ambiente é reconhecido
+    hideEditFlags();
 }
 
 // ─── Hide/Show de ambientes ───────────────────────────────────────────────────

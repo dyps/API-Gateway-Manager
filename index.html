@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" style="background-color: #0f1117;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,9 +8,15 @@
     <link rel="stylesheet" href="style.css">
     <script>if(localStorage.getItem('darkMode')!=='false')document.documentElement.classList.add('dark-pre');</script>
 </head>
-<body>
-    <script>if(document.documentElement.classList.contains('dark-pre'))document.body.classList.add('dark');</script>
-    <button id="btnDarkMode" class="dark-mode-toggle" title="Alternar modo escuro">🌙</button>
+<body class="dark">
+    <script>
+        if(document.documentElement.classList.contains('dark-pre')){
+            document.body.classList.add('dark');
+        }
+    </script>
+    <button id="btnDarkMode" class="dark-mode-toggle" title="Alternar modo escuro">
+        <script>document.write(document.body.classList.contains('dark')?'☀️':'🌙')</script>
+    </button>
     <div class="container">
         <div class="header">
             <h1>API Gateway Manager</h1>

@@ -5,6 +5,15 @@ async function handleClearEnvironments() {
         const currentJson = await dbGet('jsonConfigContent');
         if (currentJson?._isSkeleton) {
             await dbDelete('jsonConfigContent');
+            // Limpar campos do ambiente que foram salvos com o skeleton
+            await dbDelete('envName');
+            await dbDelete('host');
+            await dbDelete('nlb');
+            await dbDelete('connectionId');
+            await dbDelete('authorizerUri');
+            await dbDelete('authorizerCredentials');
+            await dbDelete('hostPortal');
+
             document.getElementById('clearBtn').classList.add('hidden');
             document.getElementById('fileInput').value = '';
             document.getElementById('fileInputName').textContent = 'Nenhum arquivo';
@@ -109,6 +118,15 @@ async function handleClearGroupPaths() {
         const currentJson = await dbGet('jsonConfigContent');
         if (currentJson?._isSkeleton) {
             await dbDelete('jsonConfigContent');
+            // Limpar campos do ambiente que foram salvos com o skeleton
+            await dbDelete('envName');
+            await dbDelete('host');
+            await dbDelete('nlb');
+            await dbDelete('connectionId');
+            await dbDelete('authorizerUri');
+            await dbDelete('authorizerCredentials');
+            await dbDelete('hostPortal');
+
             document.getElementById('clearBtn').classList.add('hidden');
             document.getElementById('fileInput').value = '';
             document.getElementById('fileInputName').textContent = 'Nenhum arquivo';
