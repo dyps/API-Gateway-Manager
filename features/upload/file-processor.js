@@ -102,8 +102,8 @@ async function processGroupPathsFile(file) {
             markDropZoneHasFile('dropZoneGroupPaths', file.name);
             document.getElementById('uploadError').classList.add('hidden');
             // Reconstruir os radios para habilitar a troca de ambiente agora que grupos estão carregados
-            const configsCard = document.getElementById('configsApiGatewayCard');
-            if (!configsCard.classList.contains('hidden')) {
+            const allWrapper = document.getElementById('allCardsWrapper');
+            if (!allWrapper.classList.contains('hidden')) {
                 await renderConfigPanel();
             }
             renderGroupPaths(dataToSave);

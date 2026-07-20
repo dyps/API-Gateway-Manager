@@ -233,7 +233,6 @@ async function refreshPathsAndContent() {
     if (!jsonConfigContent || !jsonConfigContent.paths) return;
     loadPaths(jsonConfigContent.paths);
     renderPathsTopology(document.getElementById('topologyContent'), jsonConfigContent.paths, jsonConfigContent.securityDefinitions || {});
-    document.getElementById('topologyCard').classList.remove('hidden');
     const { _isSkeleton, ...cleanData } = jsonConfigContent;
     document.getElementById('jsonContent').innerHTML = '';
     renderJsonTree(document.getElementById('jsonContent'), cleanData);

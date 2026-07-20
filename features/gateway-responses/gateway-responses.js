@@ -80,11 +80,10 @@ async function renderGatewayResponses() {
 
     const jsonConfigContent = await dbGet('jsonConfigContent');
     if (!jsonConfigContent) {
-        gatewayResponsesCard.classList.add('hidden');
+        gatewayResponsesList.innerHTML = '';
         return;
     }
 
-    gatewayResponsesCard.classList.remove('hidden');
     gatewayResponsesList.innerHTML = '';
 
     const fixedResponses = getFixedGatewayResponses();

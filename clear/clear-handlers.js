@@ -18,10 +18,8 @@ async function handleClearEnvironments() {
             document.getElementById('fileInput').value = '';
             document.getElementById('fileInputName').textContent = 'Nenhum arquivo';
             markDropZoneHasFile('dropZoneConfig', null);
-            document.getElementById('contentCard').classList.add('hidden');
-            document.getElementById('pathsApiGatewayCard').classList.add('hidden');
-            document.getElementById('topologyCard').classList.add('hidden');
-            document.getElementById('gatewayResponsesCard').classList.add('hidden');
+            document.getElementById('apiGatewayCardsWrapper').classList.add('hidden');
+            document.getElementById('allCardsWrapper').classList.add('hidden');
 
             // Recalcular authorizerNames sem o skeleton
             const groupPaths = await dbGet('groupPathsContent');
@@ -78,19 +76,16 @@ async function handleClearConfig() {
         return;
     }
 
-    document.getElementById('contentCard').classList.add('hidden');
     document.getElementById('clearBtn').classList.add('hidden');
-    document.getElementById('configsApiGatewayCard').classList.add('hidden');
-    document.getElementById('pathsApiGatewayCard').classList.add('hidden');
-    document.getElementById('topologyCard').classList.add('hidden');
-    document.getElementById('gatewayResponsesCard').classList.add('hidden');
+    document.getElementById('allCardsWrapper').classList.add('hidden');
+    document.getElementById('apiGatewayCardsWrapper').classList.add('hidden');
 
     document.getElementById('fileInput').value = '';
     document.getElementById('fileInputName').textContent = 'Nenhum arquivo';
     markDropZoneHasFile('dropZoneConfig', null);
 
     if (environmentsData) {
-        document.getElementById('configsApiGatewayCard').classList.remove('hidden');
+        document.getElementById('allCardsWrapper').classList.remove('hidden');
         await renderConfigPanel();
         if (groupPaths) {
             document.getElementById('clearGroupPathsBtn').classList.remove('hidden');
@@ -102,6 +97,8 @@ async function handleClearConfig() {
         }
     } else if (groupPaths) {
         document.getElementById('configsApiGatewayCard').classList.add('hidden');
+        document.getElementById('allCardsWrapper').classList.remove('hidden');
+        document.getElementById('apiGatewayCardsWrapper').classList.remove('hidden');
         document.getElementById('clearGroupPathsBtn').classList.remove('hidden');
         const gpName = document.getElementById('fileInputGroupPathsName');
         if (gpName.textContent === 'Nenhum arquivo') {
@@ -131,9 +128,8 @@ async function handleClearGroupPaths() {
             document.getElementById('fileInput').value = '';
             document.getElementById('fileInputName').textContent = 'Nenhum arquivo';
             markDropZoneHasFile('dropZoneConfig', null);
-            document.getElementById('contentCard').classList.add('hidden');
-            document.getElementById('pathsApiGatewayCard').classList.add('hidden');
-            document.getElementById('gatewayResponsesCard').classList.add('hidden');
+            document.getElementById('apiGatewayCardsWrapper').classList.add('hidden');
+            document.getElementById('allCardsWrapper').classList.add('hidden');
         }
         await dbDelete('groupPathsContent');
         // Recalcular authorizerNames a partir do JSON principal (se existir)
@@ -158,8 +154,8 @@ async function handleClearGroupPaths() {
 
     renderGroupPaths(null);
 
-    const configsCard = document.getElementById('configsApiGatewayCard');
-    if (!configsCard.classList.contains('hidden')) {
+    const allWrapper = document.getElementById('allCardsWrapper');
+    if (!allWrapper.classList.contains('hidden')) {
         await renderConfigPanel();
     }
 

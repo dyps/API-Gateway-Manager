@@ -95,7 +95,6 @@ function createEnvironmentCard(environment, isCurrent, canSwitch) {
     if (isCurrent) {
         const badge = document.createElement('span');
         badge.classList.add('env-card-badge');
-        badge.textContent = '● ativo';
         body.appendChild(badge);
     }
 
@@ -162,31 +161,28 @@ async function selectEnvironment(environment) {
     if (updatedJson && updatedJson.paths) {
         // Paths do API Gateway
         await loadPaths(updatedJson.paths);
-        if (window.animateCard) window.animateCard('pathsApiGatewayCard');
 
         // Topologia
         const secDefs = updatedJson.securityDefinitions || {};
         renderPathsTopology(document.getElementById('topologyContent'), updatedJson.paths, secDefs);
-        document.getElementById('topologyCard').classList.remove('hidden');
-        if (window.animateCard) window.animateCard('topologyCard');
 
         // Gateway Responses
         await renderGatewayResponses();
-        if (window.animateCard) window.animateCard('gatewayResponsesCard');
 
         // Conteúdo do JSON
         const { _isSkeleton, ...cleanData } = updatedJson;
         const jsonContent = document.getElementById('jsonContent');
         jsonContent.innerHTML = '';
         renderJsonTree(jsonContent, cleanData);
-        document.getElementById('contentCard').classList.remove('hidden');
-        if (window.animateCard) window.animateCard('contentCard');
+
+        // Animar o wrapper inteiro (todos os cards de uma vez)
+        document.getElementById('apiGatewayCardsWrapper').classList.remove('hidden');
+        if (window.animateCard) window.animateCard('apiGatewayCardsWrapper');
 
         // Grupos de Paths
         const groupPaths = await dbGet('groupPathsContent');
         if (groupPaths) {
             await renderGroupPaths(groupPaths);
-            if (window.animateCard) window.animateCard('groupPathsCard');
         }
     }
 }
@@ -210,7 +206,6 @@ function updateActiveEnvironmentCard(envName) {
             if (body && !body.querySelector('.env-card-badge')) {
                 const badge = document.createElement('span');
                 badge.classList.add('env-card-badge');
-                badge.textContent = '● ativo';
                 body.appendChild(badge);
             }
             // Remover botão de ocultar (não faz sentido no ativo)

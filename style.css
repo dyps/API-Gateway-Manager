@@ -208,13 +208,38 @@ body.dark .dark-mode-toggle:hover {
 
 .header {
     text-align: center;
-    margin-bottom: 2rem;
+    animation: headerShrink  2.0s var(--timing) 2.0s 1 both;
+}
+
+:root{
+  --timing: cubic-bezier(0.35, 0.01, 0.60, 1.00);
 }
 
 .header h1 {
-    font-size: 2.5rem;
+    animation: titleShrink 2.0s var(--timing) 2.0s 1 both;
     color: #1a202c;
     margin-bottom: 0.5rem;
+    
+}
+
+@keyframes headerShrink {
+    from {
+        margin-top: 22%;
+        margin-bottom: 2%;
+    }
+    to {
+        margin-top: 0%;
+        margin-bottom: 0.8%;
+    }
+}
+
+@keyframes titleShrink {
+    from {
+        font-size: 7rem;
+    }
+    to {
+        font-size: 2.5rem;
+    }
 }
 
 .subtitle {
@@ -344,8 +369,24 @@ body.dark .dark-mode-toggle:hover {
     overflow: hidden;
 }
 
-.card.card-enter {
-    animation: cardRevealUp 1.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+.card.card-enter,
+.cards-wrapper.card-enter {
+    animation: cardRevealUp 3.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.card.upload-card-enter {
+    animation: uploadFadeIn 0.5s ease-out both;
+}
+
+@keyframes uploadFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes cardRevealUp {
@@ -587,7 +628,6 @@ body.dark .paths-filter-clear:hover {
 .env-card-body {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
     flex: 1;
     min-width: 0;
 }
@@ -1502,7 +1542,6 @@ details[open] > .paths-group-summary::before {
     cursor: pointer;
     border: none;
     padding: 0;
-    line-height: 1;
     flex-shrink: 0;
     transition: background-color 0.2s ease;
 }
@@ -2052,6 +2091,24 @@ body.dark #compareBtn {
 }
 
 body.dark #compareBtn:hover {
+    color: #818cf8;
+}
+
+#envViewerBtn {
+    color: #4a5568;
+    transition: color 0.2s, transform 0.15s;
+}
+
+#envViewerBtn:hover {
+    color: #6366f1;
+    transform: scale(1.15);
+}
+
+body.dark #envViewerBtn {
+    color: #94a3b8;
+}
+
+body.dark #envViewerBtn:hover {
     color: #818cf8;
 }
 

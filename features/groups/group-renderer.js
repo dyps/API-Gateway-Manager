@@ -3,12 +3,9 @@
 // Renderizar lista de grupos de paths
 async function renderGroupPaths(groupPaths) {
     if (!groupPaths || Object.keys(groupPaths).length === 0) {
-        document.getElementById('groupPathsCard').classList.add('hidden');
         document.getElementById('groupPathsList').innerHTML = '';
         return;
     }
-
-    document.getElementById('groupPathsCard').classList.remove('hidden');
 
     // Skeleton só faz sentido se o API Gateway está carregado (precisa comparar paths)
     const jsonConfigContent = await dbGet('jsonConfigContent');
@@ -238,7 +235,6 @@ async function renderGroupPaths(groupPaths) {
 
     // Swap atômico — um único repaint, sem piscar
     document.getElementById('groupPathsList').replaceChildren(finalFragment);
-    document.getElementById('groupPathsCard').classList.remove('hidden');
 }
 
 // Renderizar item de grupo com badge de status e lista expandível

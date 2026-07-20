@@ -21,17 +21,29 @@ async function loadSavedConfig() {
             markDropZoneHasFile('dropZoneGroupPaths', 'JSON carregado');
         }
 
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
         if (jsonData) {
+            document.getElementById('configsApiGatewayCard').classList.remove('hidden');
             await displayConfig(jsonData);
         } else if (environmentsData) {
             document.getElementById('configsApiGatewayCard').classList.remove('hidden');
+            document.getElementById('allCardsWrapper').classList.remove('hidden');
+            if (groupPaths) {
+                document.getElementById('apiGatewayCardsWrapper').classList.remove('hidden');
+                renderGroupPaths(groupPaths);
+            } else {
+                document.getElementById('apiGatewayCardsWrapper').classList.add('hidden');
+            }
             await renderConfigPanel();
-            if (groupPaths) renderGroupPaths(groupPaths);
         } else if (groupPaths) {
             document.getElementById('configsApiGatewayCard').classList.add('hidden');
+            document.getElementById('allCardsWrapper').classList.remove('hidden');
+            document.getElementById('apiGatewayCardsWrapper').classList.remove('hidden');
             renderGroupPaths(groupPaths);
         } else {
-            document.getElementById('configsApiGatewayCard').classList.add('hidden');
+            document.getElementById('allCardsWrapper').classList.add('hidden');
+            document.getElementById('apiGatewayCardsWrapper').classList.add('hidden');
         }
     } catch (error) {
         console.error('Erro ao carregar configuração:', error);
@@ -65,9 +77,8 @@ async function displayConfig(jsonData) {
         }
     }
 
-    document.getElementById('configsApiGatewayCard').classList.remove('hidden');
-    document.getElementById('pathsApiGatewayCard').classList.remove('hidden');
-    document.getElementById('topologyCard').classList.remove('hidden');
+    document.getElementById('allCardsWrapper').classList.remove('hidden');
+    document.getElementById('apiGatewayCardsWrapper').classList.remove('hidden');
 
     // Guardar securityDefinitions antes de loadConfigs deletar
     const _secDefs = jsonData.securityDefinitions ? { ...jsonData.securityDefinitions } : {};
@@ -81,8 +92,6 @@ async function displayConfig(jsonData) {
     const jsonContent = document.getElementById('jsonContent');
     jsonContent.innerHTML = '';
     renderJsonTree(jsonContent, cleanForViewer);
-
-    document.getElementById('contentCard').classList.remove('hidden');
 
     try {
         const groupPathsContent = await dbGet('groupPathsContent');

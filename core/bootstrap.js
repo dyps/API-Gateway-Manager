@@ -1,6 +1,11 @@
 // ─── Bootstrap — inicialização da aplicação ──────────────────────────────────
 // Este arquivo deve ser carregado por último.
 
+// ─── Persistência da posição do scroll ────────────────────────────────────────
+window.addEventListener('beforeunload', () => {
+    sessionStorage.setItem('scrollY', String(window.scrollY));
+});
+
 // Bind do botão de fechar erro de upload
 document.getElementById('btnCloseUploadError').addEventListener('click', () => {
     document.getElementById('uploadError').classList.add('hidden');
@@ -119,6 +124,8 @@ document.getElementById('btnDownloadGpExample').addEventListener('click', (e) =>
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
+     // Delay para que a animação do título termine antes dos cards aparecerem
+    await new Promise(resolve => setTimeout(resolve, 2500));
     // Restaurar lista de autorizadores do IndexedDB
     const savedAuthNames = await dbGet('authorizerNames');
     if (savedAuthNames && Array.isArray(savedAuthNames)) {
@@ -128,11 +135,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ─── Animação de entrada dos cards (reveal bottom-to-top) ──────────────
-    // Observa quando um card remove a classe "hidden" e adiciona animação.
-    // Ignora o card de upload (primeiro .card sem id específico de show/hide).
+    // Observa quando um card/wrapper remove a classe "hidden" e adiciona animação.
     const animatedCardIds = [
-        'configsApiGatewayCard', 'groupPathsCard', 'gatewayResponsesCard',
-        'topologyCard', 'pathsApiGatewayCard', 'contentCard'
+        'allCardsWrapper', 'apiGatewayCardsWrapper'
     ];
     const observer = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
@@ -166,5 +171,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, { once: true });
     };
 
+    // Mostrar card de upload (com animação fadeIn própria)
+    const uploadCard = document.getElementById('uploadCard');
+    uploadCard.classList.remove('hidden');
+    uploadCard.classList.add('upload-card-enter');
+    uploadCard.addEventListener('animationend', () => {
+        uploadCard.classList.remove('upload-card-enter');
+    }, { once: true });
+
     await loadSavedConfig();
+
+    // Restaurar posição do scroll de forma fluida após a renderização
+    const savedScroll = sessionStorage.getItem('scrollY');
+    if (savedScroll) {
+        const targetY = parseInt(savedScroll, 10);
+        requestAnimationFrame(() => {
+            const startY = window.scrollY;
+            const diff = targetY - startY;
+            if (diff === 0) return;
+            const duration = 2000;
+            let startTime = null;
+            function step(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const elapsed = timestamp - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const ease = progress < 0.5
+                    ? 4 * progress * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+                window.scrollTo(0, startY + diff * ease);
+                if (progress < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        });
+    }
 });
