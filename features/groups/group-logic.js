@@ -64,9 +64,8 @@ async function calcPendingActionGroups() {
     }
 
     let defaultGroupNames = new Set();
-    for (const env of await getFixedEnvironments()) {
-        if (await isCurrentEnvironment(env)) { defaultGroupNames = new Set(env.defaultGroups || []); break; }
-    }
+    const activeEnv = await getActiveEnvironment();
+    if (activeEnv) { defaultGroupNames = new Set(activeEnv.defaultGroups || []); }
 
     const result = [];
     for (const groupName of Object.keys(syncedGroupPaths)) {

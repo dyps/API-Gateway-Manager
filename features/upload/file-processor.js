@@ -61,10 +61,7 @@ async function processGroupPathsFile(file) {
             const jsonStr = JSON.stringify(jsonData);
             let dataToSave = jsonData;
             try {
-                let activeEnv = null;
-                for (const env of await getFixedEnvironments()) {
-                    if (await isCurrentEnvironment(env)) { activeEnv = env; break; }
-                }
+                const activeEnv = await getActiveEnvironment();
                 if (activeEnv) {
                     let sourceEnv = null;
                     for (const env of await getFixedEnvironments()) {

@@ -118,6 +118,7 @@ async function loadConfigs(jsonData) {
     for (const env of await getFixedEnvironments()) {
         if (await isCurrentEnvironment(env)) {
             await dbSet('envName', env.name);
+            invalidateActiveEnvCache();
             break;
         }
     }

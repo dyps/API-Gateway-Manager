@@ -1,8 +1,7 @@
 ﻿async function renderEnvironmentFields(container) {
     // Só renderiza se nenhum ambiente fixo foi reconhecido
-    for (const env of await getFixedEnvironments()) {
-        if (await isCurrentEnvironment(env)) return;
-    }
+    const activeEnv = await getActiveEnvironment();
+    if (activeEnv) return;
 
     const fields = [
         { label: "Host", key: "host", icon: "🌐", placeholder: "ex: abc123.execute-api.us-east-1.amazonaws.com" },

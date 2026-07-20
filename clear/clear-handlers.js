@@ -13,6 +13,7 @@ async function handleClearEnvironments() {
             await dbDelete('authorizerUri');
             await dbDelete('authorizerCredentials');
             await dbDelete('hostPortal');
+            invalidateActiveEnvCache();
 
             document.getElementById('clearBtn').classList.add('hidden');
             document.getElementById('fileInput').value = '';
@@ -55,6 +56,7 @@ async function handleClearConfig() {
 
     try {
         await dbClear();
+        invalidateActiveEnvCache();
         if (groupPaths) {
             await dbSet('groupPathsContent', groupPaths);
             // Recalcular authorizerNames do groupPaths que sobrou
@@ -123,6 +125,7 @@ async function handleClearGroupPaths() {
             await dbDelete('authorizerUri');
             await dbDelete('authorizerCredentials');
             await dbDelete('hostPortal');
+            invalidateActiveEnvCache();
 
             document.getElementById('clearBtn').classList.add('hidden');
             document.getElementById('fileInput').value = '';

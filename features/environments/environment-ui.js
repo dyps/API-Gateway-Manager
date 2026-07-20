@@ -52,11 +52,13 @@ async function renderEnvironmentSelector(container) {
     ]);
     const canSwitch = !!(existingJson || groupPaths);
 
+    const activeEnv = await getActiveEnvironment();
+
     for (const environment of environments) {
         const isHidden = hiddenEnvs.includes(environment.name);
         if (isHidden) continue;
 
-        const isCurrent = await isCurrentEnvironment(environment);
+        const isCurrent = activeEnv ? activeEnv.name === environment.name : false;
         const card = createEnvironmentCard(environment, isCurrent, canSwitch);
         grid.appendChild(card);
     }
@@ -130,12 +132,13 @@ async function selectEnvironment(environment) {
         const skeleton = buildSkeletonApiGateway(environment);
         await dbSet('jsonConfigContent', skeleton);
         await dbSet('envName', environment.name);
-        await dbSet('authorizerCredentials', environment.authorizerCredentials);
-        await dbSet('authorizerUri', environment.authorizerUri);
-        await dbSet('connectionId', environment.connectionId);
-        await dbSet('host', environment.host);
-        await dbSet('hostPortal', environment.hostPortal);
-        await dbSet('nlb', environment.nlb);
+        await dbSet('authorizerCredentials', environment.authorizerCredentials || '');
+        await dbSet('authorizerUri', environment.authorizerUri || '');
+        await dbSet('connectionId', environment.connectionId || '');
+        await dbSet('host', environment.host || '');
+        await dbSet('hostPortal', environment.hostPortal || '');
+        await dbSet('nlb', environment.nlb || '');
+        invalidateActiveEnvCache();
         await loadSavedConfig();
         return;
     }

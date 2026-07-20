@@ -70,11 +70,9 @@ async function renderGroupPaths(groupPaths) {
 
     let defaultGroupNames = new Set();
     try {
-        for (const env of await getFixedEnvironments()) {
-            if (await isCurrentEnvironment(env)) {
-                defaultGroupNames = new Set(env.defaultGroups || []);
-                break;
-            }
+        const activeEnv = await getActiveEnvironment();
+        if (activeEnv) {
+            defaultGroupNames = new Set(activeEnv.defaultGroups || []);
         }
     } catch (err) {
         console.error('Erro ao detectar ambiente ativo para defaultGroups:', err);

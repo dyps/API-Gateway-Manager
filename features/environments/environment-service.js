@@ -57,41 +57,56 @@ async function getFixedEnvironments() {
     return _cachedEnvironments;
 }
 
+let _cachedActiveEnv = undefined; // undefined = não calculado, null = nenhum ativo
+
 async function isCurrentEnvironment(environment) {
     try {
-        var dif = [];
-
         const normalize = (v) => v || '';
 
-        if (normalize(await dbGet('authorizerCredentials')) !== normalize(environment.authorizerCredentials)) {
-            dif.push("authorizerCredentials");
-        }
-        if (normalize(await dbGet('authorizerUri')) !== normalize(environment.authorizerUri)) {
-            dif.push("authorizerUri");
-        }
-        if (normalize(await dbGet('connectionId')) !== normalize(environment.connectionId)) {
-            dif.push("connectionId");
-        }
-        if (normalize(await dbGet('host')) !== normalize(environment.host)) {
-            dif.push("host");
-        }
-        if (normalize(await dbGet('hostPortal')) !== normalize(environment.hostPortal)) {
-            dif.push("hostPortal");
-        }
-        if (normalize(await dbGet('nlb')) !== normalize(environment.nlb)) {
-            dif.push("nlb");
-        }
+        // Buscar todos os valores do DB em paralelo (1 transação em vez de 6)
+        const [dbAuthCreds, dbAuthUri, dbConnId, dbHost, dbHostPortal, dbNlb] = await Promise.all([
+            dbGet('authorizerCredentials'),
+            dbGet('authorizerUri'),
+            dbGet('connectionId'),
+            dbGet('host'),
+            dbGet('hostPortal'),
+            dbGet('nlb')
+        ]);
 
-        if (dif.length < 6) {
-            console.log("valid = " + environment.name);
-            console.log("dif = " + dif);
-        }
+        const matches =
+            normalize(dbAuthCreds) === normalize(environment.authorizerCredentials) &&
+            normalize(dbAuthUri) === normalize(environment.authorizerUri) &&
+            normalize(dbConnId) === normalize(environment.connectionId) &&
+            normalize(dbHost) === normalize(environment.host) &&
+            normalize(dbHostPortal) === normalize(environment.hostPortal) &&
+            normalize(dbNlb) === normalize(environment.nlb);
 
-        return dif.length === 0;
+        return matches;
     } catch (error) {
         console.error('Erro em isCurrentEnvironment:', error);
         return false;
     }
+}
+
+/**
+ * Retorna o ambiente ativo atual (cacheado). 
+ * Chama invalidateActiveEnvCache() após trocar de ambiente ou limpar dados.
+ */
+async function getActiveEnvironment() {
+    if (_cachedActiveEnv !== undefined) return _cachedActiveEnv;
+    const envs = await getFixedEnvironments();
+    for (const env of envs) {
+        if (await isCurrentEnvironment(env)) {
+            _cachedActiveEnv = env;
+            return env;
+        }
+    }
+    _cachedActiveEnv = null;
+    return null;
+}
+
+function invalidateActiveEnvCache() {
+    _cachedActiveEnv = undefined;
 }
 
 async function switchEnvironment(environment) {
@@ -171,6 +186,7 @@ async function switchEnvironment(environment) {
         await dbSet('hostPortal', environment.hostPortal || '');
         await dbSet('nlb', environment.nlb || '');
         await dbSet('jsonConfigContent', updatedJson);
+        invalidateActiveEnvCache();
 
         // Atualizar groupPathsContent — só connectionId, hostPortal e nlb
         // (authorizerUri e authorizerCredentials NÃO existem dentro dos paths,
