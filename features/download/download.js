@@ -78,7 +78,7 @@ async function renderDownloadSection(container) {
             }
 
             const finalData = await dbGet('jsonConfigContent');
-            const { _isSkeleton, ...cleanData } = finalData;
+            const { _isSkeleton, _sourceFormat, _fileFormat, _originalOpenApiVersion, ...cleanData } = finalData;
 
             // Aplicar valores editados manualmente (quando não há ambiente fixo)
             const manualHost = await dbGet('host');
@@ -125,8 +125,29 @@ async function renderDownloadSection(container) {
                 cleanData.paths = JSON.parse(pathsStr);
             }
 
-            const jsonStr = JSON.stringify(cleanData);
-            var blob = new Blob([jsonStr], { type: "application/json" });
+            // Preparar dados para download — reconverter para OAS 3.0 se necessário
+            let downloadData;
+            if (_sourceFormat === 'oas30') {
+                downloadData = convertInternalToOas30(cleanData);
+            } else {
+                downloadData = cleanData;
+            }
+
+            // Serializar no formato de arquivo original (JSON ou YAML)
+            let fileContent;
+            let mimeType;
+            let fileExt;
+            if (_fileFormat === 'yaml' && typeof jsyaml !== 'undefined') {
+                fileContent = jsyaml.dump(downloadData, { indent: 2, lineWidth: -1, noRefs: true });
+                mimeType = 'application/yaml';
+                fileExt = 'yaml';
+            } else {
+                fileContent = JSON.stringify(downloadData);
+                mimeType = 'application/json';
+                fileExt = 'json';
+            }
+
+            var blob = new Blob([fileContent], { type: mimeType });
             var url = URL.createObjectURL(blob);
             var a = document.createElement("a");
             a.href = url;
@@ -149,13 +170,13 @@ async function renderDownloadSection(container) {
 
             let filename;
             if (envName && apiId) {
-                filename = `API Gateway - ${envName} - ${apiId} - ${region} - ${timestamp}.json`;
+                filename = `API Gateway - ${envName} - ${apiId} - ${region} - ${timestamp}.${fileExt}`;
             } else if (apiId) {
-                filename = `API Gateway - ${apiId} - ${region} - ${timestamp}.json`;
+                filename = `API Gateway - ${apiId} - ${region} - ${timestamp}.${fileExt}`;
             } else if (envName) {
-                filename = `API Gateway - ${envName} - ${timestamp}.json`;
+                filename = `API Gateway - ${envName} - ${timestamp}.${fileExt}`;
             } else {
-                filename = `API Gateway - ${timestamp}.json`;
+                filename = `API Gateway - ${timestamp}.${fileExt}`;
             }
 
             a.download = filename;
@@ -172,11 +193,11 @@ async function renderDownloadSection(container) {
         hint.style.cssText = 'font-size:0.875rem;color:#718096;margin:0;line-height:1.6;';
 
         if (environmentsData && !groupPathsData) {
-            hint.innerHTML = '✅ Ambientes carregados. Carregue o <strong>JSON de Grupos de Paths</strong> para visualizar e gerenciar os grupos, ou o <strong>JSON do API Gateway</strong> para habilitar a edição completa.';
+            hint.innerHTML = '✅ Ambientes carregados. Carregue o <strong>JSON de Grupos de Paths</strong> para visualizar e gerenciar os grupos, ou o <strong>Arquivo do API Gateway</strong> para habilitar a edição completa.';
         } else if (environmentsData && groupPathsData) {
-            hint.innerHTML = '✅ Ambientes e grupos carregados. Carregue o <strong>JSON do API Gateway</strong> para habilitar a edição, validação dos grupos e o download do JSON final — ou <strong>selecione um ambiente</strong> para criar do zero.';
+            hint.innerHTML = '✅ Ambientes e grupos carregados. Carregue o <strong>Arquivo do API Gateway</strong> para habilitar a edição, validação dos grupos e o download — ou <strong>selecione um ambiente</strong> para criar do zero.';
         } else {
-            hint.textContent = 'Nenhum JSON salvo.';
+            hint.textContent = 'Nenhum arquivo salvo.';
         }
         row.appendChild(hint);
     }

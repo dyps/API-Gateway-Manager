@@ -298,7 +298,7 @@ function renderGroupPathItem(container, groupName, pathCount, validationResult, 
             addBtn.textContent = 'Adicionar';
             if (!currentJsonPaths) {
                 addBtn.disabled = true;
-                addBtn.title = 'Carregue um JSON do API Gateway para habilitar esta ação';
+                addBtn.title = 'Carregue o Arquivo do API Gateway para habilitar esta ação';
             } else {
                 addBtn.addEventListener('click', async (e) => {
                     e.stopPropagation();
@@ -324,7 +324,7 @@ function renderGroupPathItem(container, groupName, pathCount, validationResult, 
                 updateBtn.textContent = 'Atualizar';
                 if (!currentJsonPaths) {
                     updateBtn.disabled = true;
-                    updateBtn.title = 'Carregue um JSON do API Gateway para habilitar esta ação';
+                    updateBtn.title = 'Carregue o Arquivo do API Gateway para habilitar esta ação';
                 } else {
                     updateBtn.addEventListener('click', async (e) => {
                         e.stopPropagation();

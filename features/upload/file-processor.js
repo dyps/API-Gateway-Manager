@@ -1,21 +1,43 @@
 // ─── Processamento dos arquivos de upload ─────────────────────────────────────
 
 async function processConfigFile(file) {
-    if (!file.name.endsWith('.json')) {
-        showUploadError('Por favor, selecione um arquivo JSON');
+    if (!isAcceptedFileFormat(file.name)) {
+        showUploadError('Por favor, selecione um arquivo JSON ou YAML (.json, .yaml, .yml)');
         return;
     }
 
     const reader = new FileReader();
     reader.onload = async (event) => {
         try {
-            const jsonData = JSON.parse(event.target.result);
+            // 1. Parsear (JSON ou YAML)
+            const { data: rawData, format: fileFormat } = parseFileContent(event.target.result, file.name);
 
-            const validation = validateApiGatewayJson(jsonData);
+            // 2. Validar estrutura
+            const validation = validateApiGatewayJson(rawData);
             if (!validation.valid) {
                 showUploadError(validation.message);
                 return;
             }
+
+            // Mostrar aviso sobre extensões AWS (não bloqueante)
+            if (validation.warning) {
+                showMessage(validation.warning, 'error');
+            }
+
+            // 3. Normalizar formato (OAS 3.0 → interno baseado em Swagger 2.0)
+            let jsonData;
+            const specFormat = detectSpecFormat(rawData);
+
+            if (specFormat === 'oas30') {
+                jsonData = normalizeOas30ToInternal(rawData);
+                showMessage('Arquivo OpenAPI 3.0 importado e convertido com sucesso!', 'success');
+            } else {
+                jsonData = rawData;
+            }
+
+            // Salvar formato de origem e formato do arquivo para uso no download
+            jsonData._sourceFormat = specFormat === 'oas30' ? 'oas30' : 'swagger2';
+            jsonData._fileFormat = fileFormat; // 'json' ou 'yaml'
 
             await dbSet(CONFIG_CONTENT_KEY, jsonData);
 
@@ -32,10 +54,13 @@ async function processConfigFile(file) {
             markDropZoneHasFile('dropZoneConfig', file.name);
             document.getElementById('uploadError').classList.add('hidden');
             displayConfig(jsonData);
-            showMessage('Configuração salva com sucesso!', 'success');
+
+            if (specFormat !== 'oas30') {
+                showMessage('Configuração salva com sucesso!', 'success');
+            }
         } catch (error) {
-            showUploadError('Erro: Arquivo JSON inválido');
-            console.error('Erro ao processar JSON:', error);
+            showUploadError('Erro: ' + (error.message || 'Arquivo inválido'));
+            console.error('Erro ao processar arquivo:', error);
         }
     };
     reader.onerror = () => showUploadError('Erro ao ler o arquivo');
@@ -43,15 +68,15 @@ async function processConfigFile(file) {
 }
 
 async function processGroupPathsFile(file) {
-    if (!file.name.endsWith('.json')) {
-        showUploadError('Por favor, selecione um arquivo JSON');
+    if (!isAcceptedFileFormat(file.name)) {
+        showUploadError('Por favor, selecione um arquivo JSON ou YAML (.json, .yaml, .yml)');
         return;
     }
 
     const reader = new FileReader();
     reader.onload = async (event) => {
         try {
-            const jsonData = JSON.parse(event.target.result);
+            const { data: jsonData } = parseFileContent(event.target.result, file.name);
             const validation = validateGroupPathsStructure(jsonData);
             if (!validation.valid) {
                 showUploadError(validation.message);
@@ -87,7 +112,6 @@ async function processGroupPathsFile(file) {
             // Extrair e salvar nomes dos autorizadores usados nos paths dos grupos
             const authNames = extractAuthorizerNamesFromGroupPaths(dataToSave);
             if (authNames.length > 0) {
-                // Mesclar com nomes já salvos (podem ter vindo do JSON principal)
                 const existing = await dbGet('authorizerNames') || [];
                 const merged = [...new Set([...existing, ...authNames])];
                 window._authorizerNames = merged;
@@ -105,23 +129,24 @@ async function processGroupPathsFile(file) {
             }
             renderGroupPaths(dataToSave);
             showMessage('JSON de grupos salvo com sucesso!', 'success');
-        } catch {
-            showUploadError('Erro: Arquivo JSON inválido');
+        } catch (error) {
+            showUploadError('Erro: ' + (error.message || 'Arquivo inválido'));
+            console.error('Erro ao processar arquivo de grupos:', error);
         }
     };
     reader.readAsText(file);
 }
 
 async function processEnvironmentsFile(file) {
-    if (!file.name.endsWith('.json')) {
-        showUploadError('Por favor, selecione um arquivo JSON');
+    if (!isAcceptedFileFormat(file.name)) {
+        showUploadError('Por favor, selecione um arquivo JSON ou YAML (.json, .yaml, .yml)');
         return;
     }
 
     const reader = new FileReader();
     reader.onload = async (event) => {
         try {
-            const jsonData = JSON.parse(event.target.result);
+            const { data: jsonData } = parseFileContent(event.target.result, file.name);
 
             const validation = validateEnvironmentsJson(jsonData);
             if (!validation.valid) {
@@ -143,8 +168,8 @@ async function processEnvironmentsFile(file) {
 
             await loadSavedConfig();
         } catch (error) {
-            showUploadError('Erro: Arquivo JSON inválido');
-            console.error('Erro ao processar environments.json:', error);
+            showUploadError('Erro: ' + (error.message || 'Arquivo inválido'));
+            console.error('Erro ao processar environments:', error);
         }
     };
     reader.readAsText(file);

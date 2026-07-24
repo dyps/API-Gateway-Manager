@@ -29,7 +29,7 @@
         <div class="card hidden" id="uploadCard">
             <div class="card-header">
                 <div class="section-title-row">
-                    <h2>Enviar Arquivos JSON</h2>
+                    <h2>Enviar Arquivos</h2>
                     <button class="info-icon-btn" id="btnInfoStorage" title="Informação sobre armazenamento">i</button>
                 </div>
             </div>
@@ -37,7 +37,7 @@
                 <div id="fileInputDiv" class="file-input-group">
                     <!-- Environments JSON -->
                     <div class="drop-zone" id="dropZoneEnvironments">
-                        <button class="drop-zone-help-btn" id="btnHelpEnvironments" title="Sobre este JSON">?</button>
+                        <button class="drop-zone-help-btn" id="btnHelpEnvironments" title="Sobre este arquivo">?</button>
                         <div class="drop-zone-icon">🌍</div>
                         <div class="drop-zone-label">JSON de Ambientes</div>
                         <div class="drop-zone-hint">Arraste e solte ou clique para escolher</div>
@@ -46,11 +46,11 @@
                             <button class="file-choose-btn" id="btnChooseEnvironments">Escolher arquivo</button>
                             <button id="clearEnvironmentsBtn" onclick="handleClearEnvironments()" class="clear-file-btn hidden">✕ Limpar</button>
                         </div>
-                        <input type="file" id="fileInputEnvironments" accept=".json" class="hidden">
+                        <input type="file" id="fileInputEnvironments" accept=".json,.yaml,.yml" class="hidden">
                     </div>
                     <!-- Group Paths JSON -->
                     <div class="drop-zone" id="dropZoneGroupPaths">
-                        <button class="drop-zone-help-btn" id="btnHelpGroupPaths" title="Sobre este JSON">?</button>
+                        <button class="drop-zone-help-btn" id="btnHelpGroupPaths" title="Sobre este arquivo">?</button>
                         <div class="drop-zone-icon">🗂️</div>
                         <div class="drop-zone-label">JSON de Grupos de Paths</div>
                         <div class="drop-zone-hint">Arraste e solte ou clique para escolher</div>
@@ -59,20 +59,20 @@
                             <button class="file-choose-btn" id="btnChooseGroupPaths">Escolher arquivo</button>
                             <button id="clearGroupPathsBtn" onclick="handleClearGroupPaths()" class="clear-file-btn hidden">✕ Limpar</button>
                         </div>
-                        <input type="file" id="fileInputGroupPaths" accept=".json" class="hidden">
+                        <input type="file" id="fileInputGroupPaths" accept=".json,.yaml,.yml" class="hidden">
                     </div>
                     <!-- API Gateway JSON -->
                     <div class="drop-zone" id="dropZoneConfig">
-                        <button class="drop-zone-help-btn" id="btnHelpConfig" title="Sobre este JSON">?</button>
+                        <button class="drop-zone-help-btn" id="btnHelpConfig" title="Sobre este arquivo">?</button>
                         <div class="drop-zone-icon">📄</div>
-                        <div class="drop-zone-label">JSON do API Gateway</div>
+                        <div class="drop-zone-label">Arquivo do API Gateway</div>
                         <div class="drop-zone-hint">Arraste e solte ou clique para escolher</div>
                         <span id="fileInputName" class="drop-zone-filename">Nenhum arquivo</span>
                         <div class="drop-zone-actions">
                             <button class="file-choose-btn" id="btnChooseConfig">Escolher arquivo</button>
                             <button id="clearBtn" onclick="handleClearConfig()" class="clear-file-btn hidden">✕ Limpar</button>
                         </div>
-                        <input type="file" id="fileInput" accept=".json" class="hidden">
+                        <input type="file" id="fileInput" accept=".json,.yaml,.yml" class="hidden">
                     </div>
                 </div>
                 <!-- Área de erros de upload -->
@@ -118,12 +118,12 @@
             <div class="modal-box">
                 <button class="modal-close-btn" id="btnCloseModalHelpGroupPaths">✕</button>
                 <h3>🗂️ JSON de Grupos de Paths</h3>
-                <p>Agrupa os paths do API Gateway em grupos nomeados para facilitar a gestão. <strong>Carregue antes do JSON do API Gateway</strong> para que os paths sejam exibidos organizados por grupo.</p>
+                <p>Agrupa os paths do API Gateway em grupos nomeados para facilitar a gestão. <strong>Carregue antes do Arquivo do API Gateway</strong> para que os paths sejam exibidos organizados por grupo.</p>
                 <ul>
                     <li>Deve ser um objeto onde cada chave é o <strong>nome do grupo</strong>.</li>
                     <li>O valor de cada grupo é um objeto com os paths (<span class="modal-tag">/meu/path</span>) e suas configurações completas.</li>
                     <li>Com o JSON de Ambientes carregado, os valores de ambiente dentro do arquivo são substituídos automaticamente.</li>
-                    <li>Sem o JSON do API Gateway, os grupos são exibidos mas sem status de validação (sem badges de divergência).</li>
+                    <li>Sem o Arquivo do API Gateway, os grupos são exibidos mas sem status de validação (sem badges de divergência).</li>
                     <li>Consulte o arquivo <span class="modal-tag">groupPaths.example.json</span> para ver o formato esperado.</li>
                     <li>Exemplo: <span class="modal-tag">{ "MeuGrupo": { "/api/recurso": { ... } } }</span></li>
                 </ul>
@@ -135,8 +135,14 @@
         <div class="modal-overlay hidden" id="modalHelpConfig">
             <div class="modal-box">
                 <button class="modal-close-btn" id="btnCloseModalHelpConfig">✕</button>
-                <h3>📄 JSON do API Gateway</h3>
-                <p>Arquivo de configuração exportado diretamente do <strong>AWS API Gateway</strong> (formato Swagger/OpenAPI 2.0). É o JSON principal — habilita a edição de paths, validação dos grupos e o download do JSON final.</p>
+                <h3>📄 Arquivo do API Gateway</h3>
+                <p>Arquivo de configuração exportado diretamente do <strong>AWS API Gateway</strong>. Aceita <strong>Swagger 2.0</strong> (OpenAPI 2.0) ou <strong>OpenAPI 3.0</strong>, em formato <strong>JSON</strong> ou <strong>YAML</strong>. É o arquivo principal — habilita a edição de paths, validação dos grupos e o download.</p>
+
+                <h4 style="margin-top:1rem;margin-bottom:0.5rem;">Formatos aceitos</h4>
+                <ul>
+                    <li><strong>Swagger 2.0</strong> — JSON ou YAML (campo <span class="modal-tag">"swagger": "2.0"</span>)</li>
+                    <li><strong>OpenAPI 3.0</strong> — JSON ou YAML (campo <span class="modal-tag">"openapi": "3.0.x"</span>)</li>
+                </ul>
 
                 <h4 style="margin-top:1rem;margin-bottom:0.5rem;">Como exportar pelo Console AWS</h4>
                 <ol class="modal-steps">
@@ -147,19 +153,27 @@
                     <li>Clique em <strong>Stage actions</strong> → <strong>Export</strong>.</li>
                     <li>No popup de exportação, selecione:
                         <ul>
-                            <li>API specification type: <strong>Swagger</strong></li>
-                            <li>Format: <strong>JSON</strong></li>
-                            <li>Extensions: <strong>Export with API Gateway extensions</strong></li>
+                            <li>API specification type: <strong>Swagger</strong> ou <strong>OpenAPI 3</strong></li>
+                            <li>Format: <strong>JSON</strong> ou <strong>YAML</strong></li>
+                            <li>Extensions: <strong>API Gateway Extensions</strong> ⚠️</li>
                         </ul>
                     </li>
                     <li>Clique em <strong>Export API</strong> e salve o arquivo.</li>
                 </ol>
 
+                <div style="margin-top:0.75rem;padding:0.5rem 0.75rem;border-radius:6px;background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.3);">
+                    <strong>⚠️ Importante:</strong> A extensão <strong>"API Gateway Extensions"</strong> (ou <span class="modal-tag">extensions='apigateway'</span> na CLI) é <strong>obrigatória</strong>. Sem ela, o arquivo vem sem os dados de integração (<span class="modal-tag">x-amazon-apigateway-integration</span>) e autorizadores que o app precisa para funcionar.
+                </div>
+
+                <h4 style="margin-top:1rem;margin-bottom:0.5rem;">Via AWS CLI</h4>
+                <div style="font-family:monospace;font-size:0.8rem;background:rgba(0,0,0,0.15);padding:0.5rem;border-radius:4px;overflow-x:auto;white-space:nowrap;">
+                    aws apigateway get-export --parameters extensions='apigateway' --rest-api-id <em>ID</em> --stage-name <em>STAGE</em> --export-type swagger output.json
+                </div>
+
                 <ul style="margin-top:0.75rem;">
-                    <li>Deve ser um objeto JSON com a chave <span class="modal-tag">paths</span> contendo os endpoints.</li>
-                    <li>Com o JSON de Ambientes carregado, o ambiente é detectado automaticamente pelo conteúdo do arquivo.</li>
-                    <li>Com o JSON de Grupos carregado, os paths são exibidos organizados por grupo e com badges de status.</li>
-                    <li>Campos esperados na raiz: <span class="modal-tag">host</span>, <span class="modal-tag">paths</span>, <span class="modal-tag">securityDefinitions</span>, etc.</li>
+                    <li>Deve conter a chave <span class="modal-tag">paths</span> com os endpoints.</li>
+                    <li>Com o JSON de Ambientes carregado, o ambiente é detectado automaticamente pelo conteúdo.</li>
+                    <li>Arquivos OpenAPI 3.0 são convertidos internamente para compatibilidade — o download preserva o formato original.</li>
                 </ul>
             </div>
         </div>
@@ -291,6 +305,9 @@
         </div>
     </div>
 
+    <!-- ═══ Dependências externas ═══ -->
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+
     <!-- ═══ Nova estrutura modular ═══ -->
 
     <!-- 1. Infraestrutura -->
@@ -299,6 +316,7 @@
     <script src="core/state.js"></script>
 
     <!-- 2. Utilitários e validação -->
+    <script src="utils/format-adapter.js"></script>
     <script src="utils/group-paths-validator.js"></script>
     <script src="utils/json-util.js"></script>
     <script src="validation/validators.js"></script>

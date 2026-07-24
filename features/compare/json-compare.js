@@ -87,11 +87,11 @@ async function renderComparison(referenceJson) {
     const currentJson = await dbGet('jsonConfigContent');
     if (!currentJson) {
         leftPanel.innerHTML = '<p class="compare-empty">JSON de referência carregado</p>';
-        rightPanel.innerHTML = '<p class="compare-empty">Nenhum JSON do API Gateway carregado</p>';
+        rightPanel.innerHTML = '<p class="compare-empty">Nenhum Arquivo do API Gateway carregado</p>';
         return;
     }
 
-    const { _isSkeleton, ...downloadJson } = currentJson;
+    const { _isSkeleton, _sourceFormat, _fileFormat, _originalOpenApiVersion, ...downloadJson } = currentJson;
 
     leftPanel.innerHTML = '';
     rightPanel.innerHTML = '';

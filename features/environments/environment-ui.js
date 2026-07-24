@@ -82,7 +82,7 @@ function createEnvironmentCard(environment, isCurrent, canSwitch) {
     }
     if (!canSwitch) {
         card.classList.add('env-card-disabled');
-        card.title = 'Carregue o JSON do API Gateway ou de Grupos para trocar de ambiente';
+        card.title = 'Carregue o Arquivo do API Gateway ou de Grupos para trocar de ambiente';
     }
 
     // Conteúdo principal

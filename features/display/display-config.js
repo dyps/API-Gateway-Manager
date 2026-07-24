@@ -88,7 +88,7 @@ async function displayConfig(jsonData) {
     renderPathsTopology(document.getElementById('topologyContent'), jsonData.paths || {}, _secDefs);
 
     const savedForViewer = await dbGet('jsonConfigContent');
-    const { _isSkeleton: _flag, ...cleanForViewer } = savedForViewer || {};
+    const { _isSkeleton: _flag, _sourceFormat: _sf, _fileFormat: _ff, _originalOpenApiVersion: _ov, ...cleanForViewer } = savedForViewer || {};
     const jsonContent = document.getElementById('jsonContent');
     jsonContent.innerHTML = '';
     renderJsonTree(jsonContent, cleanForViewer);
@@ -112,6 +112,11 @@ async function loadConfigs(jsonData) {
     delete jsonData.swagger;
     delete jsonData.info;
     delete jsonData.schemes;
+
+    // Metadados de formato — preservar no DB mas não exibir
+    delete jsonData._sourceFormat;
+    delete jsonData._fileFormat;
+    delete jsonData._originalOpenApiVersion;
 
     await loadURIsLambda(jsonData);
 
