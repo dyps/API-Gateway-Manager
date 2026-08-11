@@ -95,6 +95,45 @@ function checkHasAwsIntegrations(paths) {
 }
 
 /**
+ * Valida que todos os autorizadores referenciados nos paths (campo `security`)
+ * existem no `securityDefinitions` do JSON.
+ * @param {object} data - documento normalizado (estrutura interna Swagger 2.0)
+ * @returns {{ valid: boolean, missing: string[], used: string[] }}
+ *   - valid: true se todos os autorizadores usados estão definidos
+ *   - missing: lista de nomes de autorizadores usados mas não definidos
+ *   - used: lista completa de nomes de autorizadores encontrados nos paths
+ */
+function validateAuthorizersInSecurityDefinitions(data) {
+    const paths = data?.paths || {};
+    const securityDefinitions = data?.securityDefinitions || {};
+    const definedNames = new Set(Object.keys(securityDefinitions));
+    const usedNames = new Set();
+
+    for (const pathConfig of Object.values(paths)) {
+        if (!pathConfig || typeof pathConfig !== 'object') continue;
+        for (const [key, methodConfig] of Object.entries(pathConfig)) {
+            if (!methodConfig || typeof methodConfig !== 'object') continue;
+            const securityArray = methodConfig.security;
+            if (!Array.isArray(securityArray)) continue;
+            for (const secItem of securityArray) {
+                if (secItem && typeof secItem === 'object') {
+                    for (const name of Object.keys(secItem)) {
+                        usedNames.add(name);
+                    }
+                }
+            }
+        }
+    }
+
+    const missing = [...usedNames].filter(name => !definedNames.has(name));
+    return {
+        valid: missing.length === 0,
+        missing,
+        used: [...usedNames]
+    };
+}
+
+/**
  * Valida a estrutura básica esperada do JSON de Ambientes.
  * @param {*} data - objeto já parseado
  * @returns {{ valid: boolean, message: string }}

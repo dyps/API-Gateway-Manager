@@ -23,7 +23,18 @@ async function renderDownloadSection(container) {
                 return;
             }
 
-            // Validação 2: ambiente do JSON deve bater com o ambiente selecionado
+            // Validação 2: autorizadores usados nos paths devem estar no securityDefinitions
+            const authValidation = validateAuthorizersInSecurityDefinitions(jsonData);
+            if (!authValidation.valid) {
+                const missingList = authValidation.missing.map(n => `• <strong>${n}</strong>`).join('<br>');
+                const proceed = await showConfirmDialog(
+                    '⚠️ Autorizadores não definidos',
+                    `Os seguintes autorizadores são usados nos paths mas <strong>não existem</strong> no <code>securityDefinitions</code>:<br><br>${missingList}<br><br>Isso pode causar erro ao importar no API Gateway. Deseja baixar mesmo assim?`
+                );
+                if (!proceed) return;
+            }
+
+            // Validação 3: ambiente do JSON deve bater com o ambiente selecionado
             const savedEnvName = await dbGet('envName');
             let detectedEnvName = null;
             const jsonStr2 = JSON.stringify(jsonData);
