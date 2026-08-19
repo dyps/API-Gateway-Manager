@@ -109,7 +109,10 @@
                     <li>Com ele carregado, ao importar o JSON de Grupos ou o do API Gateway, os valores são substituídos automaticamente para o ambiente selecionado.</li>
                     <li>Consulte o arquivo <span class="modal-tag">environments.example.json</span> para ver o formato esperado.</li>
                 </ul>
-                <a class="modal-download-btn" href="#" id="btnDownloadEnvExample">⬇ Baixar environments.example.json</a>
+                <div class="modal-actions-row">
+                    <a class="modal-download-btn" href="#" id="btnDownloadEnvExample">⬇ Baixar environments.example.json</a>
+                    <button class="modal-include-btn" id="btnIncludeEnvExample">📥 Incluir exemplo</button>
+                </div>
             </div>
         </div>
 
@@ -127,7 +130,10 @@
                     <li>Consulte o arquivo <span class="modal-tag">groupPaths.example.json</span> para ver o formato esperado.</li>
                     <li>Exemplo: <span class="modal-tag">{ "MeuGrupo": { "/api/recurso": { ... } } }</span></li>
                 </ul>
-                <a class="modal-download-btn" href="#" id="btnDownloadGpExample">⬇ Baixar groupPaths.example.json</a>
+                <div class="modal-actions-row">
+                    <a class="modal-download-btn" href="#" id="btnDownloadGpExample">⬇ Baixar groupPaths.example.json</a>
+                    <button class="modal-include-btn" id="btnIncludeGpExample">📥 Incluir exemplo</button>
+                </div>
             </div>
         </div>
 
@@ -269,13 +275,14 @@
             <h3>🔀 Comparar JSON</h3>
 
             <!-- Área de upload -->
-            <div id="compareUploadArea" class="compare-upload-area">
-                <p class="compare-upload-hint">Envie o JSON de referência para comparar com o JSON que seria baixado.</p>
+            <div id="compareUploadArea" class="compare-upload-area compare-drop-target">
+                <div class="compare-drop-icon">📄</div>
+                <p class="compare-upload-hint">Arraste e solte o JSON de referência aqui<br>ou</p>
                 <div class="compare-upload-row">
                     <button class="compare-choose-btn" onclick="document.getElementById('compareFileInput').click()">Escolher JSON de referência</button>
                     <span id="compareFileName" class="compare-file-name">Nenhum arquivo</span>
                 </div>
-                <input type="file" id="compareFileInput" accept=".json" class="hidden" onchange="handleCompareFileUpload(event)">
+                <input type="file" id="compareFileInput" accept=".json,.yaml,.yml" class="hidden" onchange="handleCompareFileUpload(event)">
             </div>
 
             <!-- Área de diff -->

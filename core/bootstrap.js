@@ -123,6 +123,75 @@ document.getElementById('btnDownloadGpExample').addEventListener('click', (e) =>
     URL.revokeObjectURL(url);
 });
 
+// Botões de "Incluir exemplo" — carrega os exemplos diretamente no app
+document.getElementById('btnIncludeEnvExample').addEventListener('click', async () => {
+    try {
+        const data = JSON.parse(JSON.stringify(ENVIRONMENTS_EXAMPLE));
+        const validation = validateEnvironmentsJson(data);
+        if (!validation.valid) {
+            showMessage(validation.message, 'error');
+            return;
+        }
+
+        await dbSet('environmentsContent', data);
+        if (typeof _cachedEnvironments !== 'undefined') {
+            _cachedEnvironments = data;
+        }
+
+        document.getElementById('clearEnvironmentsBtn').classList.remove('hidden');
+        document.getElementById('fileInputEnvironmentsName').textContent = 'environments.example.json';
+        markDropZoneHasFile('dropZoneEnvironments', 'environments.example.json');
+
+        // Fechar modal
+        document.getElementById('modalHelpEnvironments').classList.add('hidden');
+        showMessage('Exemplo de ambientes carregado com sucesso!', 'success');
+        await loadSavedConfig();
+    } catch (error) {
+        showMessage('Erro ao incluir exemplo de ambientes: ' + error.message, 'error');
+        console.error('Erro ao incluir exemplo de ambientes:', error);
+    }
+});
+
+document.getElementById('btnIncludeGpExample').addEventListener('click', async () => {
+    try {
+        const data = JSON.parse(JSON.stringify(GROUP_PATHS_EXAMPLE));
+        const validation = validateGroupPathsStructure(data);
+        if (!validation.valid) {
+            showMessage(validation.message, 'error');
+            return;
+        }
+
+        await dbSet('groupPathsContent', data);
+
+        // Extrair e salvar nomes dos autorizadores usados nos paths dos grupos
+        const authNames = extractAuthorizerNamesFromGroupPaths(data);
+        if (authNames.length > 0) {
+            const existing = await dbGet('authorizerNames') || [];
+            const merged = [...new Set([...existing, ...authNames])];
+            window._authorizerNames = merged;
+            await dbSet('authorizerNames', merged);
+        }
+
+        document.getElementById('clearGroupPathsBtn').classList.remove('hidden');
+        document.getElementById('fileInputGroupPathsName').textContent = 'groupPaths.example.json';
+        markDropZoneHasFile('dropZoneGroupPaths', 'groupPaths.example.json');
+
+        // Fechar modal
+        document.getElementById('modalHelpGroupPaths').classList.add('hidden');
+
+        // Atualizar UI se já visível
+        const allWrapper = document.getElementById('allCardsWrapper');
+        if (!allWrapper.classList.contains('hidden')) {
+            await renderConfigPanel();
+        }
+        renderGroupPaths(data);
+        showMessage('Exemplo de grupos de paths carregado com sucesso!', 'success');
+    } catch (error) {
+        showMessage('Erro ao incluir exemplo de grupos: ' + error.message, 'error');
+        console.error('Erro ao incluir exemplo de grupos:', error);
+    }
+});
+
 document.addEventListener('DOMContentLoaded', async () => {
      // Delay para que a animação do título termine antes dos cards aparecerem
     await new Promise(resolve => setTimeout(resolve, 2500));

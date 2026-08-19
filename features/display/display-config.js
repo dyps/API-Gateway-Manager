@@ -42,6 +42,7 @@ async function loadSavedConfig() {
             document.getElementById('apiGatewayCardsWrapper').classList.remove('hidden');
             renderGroupPaths(groupPaths);
         } else {
+            document.getElementById('configsApiGatewayCard').classList.add('hidden');
             document.getElementById('allCardsWrapper').classList.add('hidden');
             document.getElementById('apiGatewayCardsWrapper').classList.add('hidden');
         }

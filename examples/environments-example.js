@@ -9,44 +9,15 @@ const ENVIRONMENTS_EXAMPLE = [
         "basePath": "/dev",
         "x-amazon-apigateway-security-policy": "TLS_1_0",
 
-        "authorizerCredentials": "arn:aws:iam::ACCOUNT_ID:role/lambda_auth_role_InvokeFunction",
-        "authorizerUri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:ACCOUNT_ID:function:api_gateway_authorizer/invocations",
+        "authorizerCredentials": "arn:aws:iam::111111111111:role/lambda_auth_role_InvokeFunction",
+        "authorizerUri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:111111111111:function:api_gateway_authorizer_dev/invocations",
 
-        "connectionId": "ABCDEF",
-        "host": "ABCDEFGH.execute-api.us-east-1.amazonaws.com",
+        "connectionId": "abc111",
+        "host": "dev-api.execute-api.us-east-1.amazonaws.com",
         "hostPortal": "'https://portal.dev.example.com'",
-        "nlb": "http://NLB-NAME.elb.us-east-1.amazonaws.com",
+        "nlb": "http://NLB-DEV.elb.us-east-1.amazonaws.com",
 
-        "defaultGroups": ["Grupo A", "Grupo B"]
-    },
-    {
-        "name": "Meu Ambiente DEV (com autorizador extra)",
-        "title": "Api Gateway - DEV",
-        "description": "Exemplo com dois autorizadores. O autorizador primário (header/token) é detectado automaticamente: se o JSON/groupPaths tiver apenas um, esse será o primário. Se tiver vários, o que NÃO aparece em securityDefinitions do environment é considerado o primário (usa authorizerUri e authorizerCredentials da raiz). Autorizadores declarados em securityDefinitions herdam authorizerUri e authorizerCredentials do ambiente se omitidos.",
-        "basePath": "/dev",
-        "x-amazon-apigateway-security-policy": "TLS_1_0",
-
-        "authorizerCredentials": "arn:aws:iam::ACCOUNT_ID:role/lambda_auth_role_InvokeFunction",
-        "authorizerUri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:ACCOUNT_ID:function:api_gateway_authorizer/invocations",
-
-        "securityDefinitions": {
-            "meu-autorizador-extra": {
-                "type": "apiKey",
-                "name": "NOME_DO_PARAMETRO",
-                "in": "query",
-                "x-amazon-apigateway-authorizer": {
-                    "type": "request",
-                    "identitySource": "method.request.querystring.NOME_DO_PARAMETRO"
-                }
-            }
-        },
-
-        "connectionId": "ABCDEF",
-        "host": "ABCDEFGH.execute-api.us-east-1.amazonaws.com",
-        "hostPortal": "'https://portal.dev.example.com'",
-        "nlb": "http://NLB-NAME.elb.us-east-1.amazonaws.com",
-
-        "defaultGroups": ["Grupo A", "Grupo B"]
+        "defaultGroups": ["Meu Grupo A", "Meu Grupo B"]
     },
     {
         "name": "Meu Ambiente PROD",
@@ -65,13 +36,13 @@ const ENVIRONMENTS_EXAMPLE = [
                     "Effect": "Allow",
                     "Principal": "*",
                     "Action": "execute-api:Invoke",
-                    "Resource": "arn:aws:execute-api:us-east-1:ACCOUNT_ID:API_ID/*"
+                    "Resource": "arn:aws:execute-api:us-east-1:333333333333:API_ID/*"
                 },
                 {
                     "Effect": "Deny",
                     "Principal": "*",
                     "Action": "execute-api:Invoke",
-                    "Resource": "arn:aws:execute-api:us-east-1:ACCOUNT_ID:API_ID/*",
+                    "Resource": "arn:aws:execute-api:us-east-1:333333333333:API_ID/*",
                     "Condition": {
                         "StringNotEquals": {
                             "aws:SourceVpce": "vpce-XXXXXXXXXXXXXXXXX"
@@ -81,14 +52,14 @@ const ENVIRONMENTS_EXAMPLE = [
             ]
         },
 
-        "authorizerCredentials": "arn:aws:iam::ACCOUNT_ID:role/lambda_auth_role_InvokeFunction",
-        "authorizerUri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:ACCOUNT_ID:function:api_gateway_authorizer/invocations",
+        "authorizerCredentials": "arn:aws:iam::333333333333:role/lambda_auth_role_InvokeFunction",
+        "authorizerUri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:333333333333:function:api_gateway_authorizer_prod/invocations",
 
-        "connectionId": "ABCDEF",
-        "host": "ABCDEFGH.execute-api.us-east-1.amazonaws.com",
+        "connectionId": "abc333",
+        "host": "prod-api.execute-api.us-east-1.amazonaws.com",
         "hostPortal": "'https://portal.prod.example.com'",
-        "nlb": "http://NLB-NAME.elb.us-east-1.amazonaws.com",
+        "nlb": "http://NLB-PROD.elb.us-east-1.amazonaws.com",
 
-        "defaultGroups": ["Grupo A", "Grupo B"]
+        "defaultGroups": ["Meu Grupo A", "Meu Grupo B"]
     }
 ];

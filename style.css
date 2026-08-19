@@ -1680,6 +1680,48 @@ body.dark .modal-download-btn:hover {
     border-color: #4f46e5;
 }
 
+.modal-actions-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.modal-actions-row .modal-download-btn {
+    margin-top: 0;
+    flex: 1;
+}
+
+.modal-include-btn {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #047857;
+    background: #ecfdf5;
+    border: 1px solid #6ee7b7;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    text-align: center;
+    box-sizing: border-box;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.modal-include-btn:hover {
+    background: #d1fae5;
+    border-color: #34d399;
+}
+
+body.dark .modal-include-btn {
+    color: #6ee7b7;
+    background: #022c22;
+    border-color: #065f46;
+}
+
+body.dark .modal-include-btn:hover {
+    background: #064e3b;
+    border-color: #059669;
+}
+
 .modal-tag {
     display: inline-block;
     background: #eef2ff;
@@ -2151,6 +2193,32 @@ body.dark .compare-popup h3 {
     align-items: center;
     gap: 1rem;
     padding: 2rem 1rem;
+}
+
+.compare-drop-target {
+    border: 2px dashed #cbd5e0;
+    border-radius: 0.75rem;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+    cursor: default;
+}
+
+.compare-drop-target.drag-over {
+    border-color: #6366f1;
+    background-color: #eef2ff;
+}
+
+body.dark .compare-drop-target {
+    border-color: #4a5568;
+}
+
+body.dark .compare-drop-target.drag-over {
+    border-color: #818cf8;
+    background-color: #1e2540;
+}
+
+.compare-drop-icon {
+    font-size: 2rem;
+    line-height: 1;
 }
 
 .compare-upload-hint {

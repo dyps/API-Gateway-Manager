@@ -9,12 +9,35 @@ async function openComparePopup() {
     const overlay = document.getElementById('modalCompare');
     overlay.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    setupCompareDropZone();
     await renderCompareContent();
 }
 
 function closeComparePopup() {
     document.getElementById('modalCompare').classList.add('hidden');
     document.body.style.overflow = '';
+}
+
+/**
+ * Configura drag-and-drop na área de upload do compare
+ */
+let _compareDropZoneSetup = false;
+function setupCompareDropZone() {
+    if (_compareDropZoneSetup) return;
+    const zone = document.getElementById('compareUploadArea');
+    if (!zone) return;
+    _compareDropZoneSetup = true;
+
+    ['dragenter', 'dragover'].forEach(evt => {
+        zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    });
+    ['dragleave', 'dragend', 'drop'].forEach(evt => {
+        zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.remove('drag-over'); });
+    });
+    zone.addEventListener('drop', e => {
+        const file = e.dataTransfer?.files?.[0];
+        if (file) processCompareFile(file);
+    });
 }
 
 /**
@@ -41,19 +64,32 @@ async function renderCompareContent() {
 }
 
 /**
- * Processa o upload do JSON de referência
+ * Processa o upload do JSON de referência (via input file)
  */
 async function handleCompareFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
+    await processCompareFile(file);
+}
+
+/**
+ * Processa um arquivo de referência (vindo de input ou drag-and-drop)
+ */
+async function processCompareFile(file) {
     try {
         const text = await file.text();
-        const json = JSON.parse(text);
+        let json;
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (ext === 'yaml' || ext === 'yml') {
+            json = jsyaml.load(text);
+        } else {
+            json = JSON.parse(text);
+        }
         await dbSet(COMPARE_JSON_KEY, json);
         document.getElementById('compareFileName').textContent = file.name;
         await renderCompareContent();
     } catch (e) {
-        showMessage('Arquivo inválido. Envie um JSON válido.', 'error');
+        showMessage('Arquivo inválido. Envie um JSON ou YAML válido.', 'error');
     }
 }
 

@@ -155,12 +155,7 @@ async function handleClearGroupPaths() {
     document.getElementById('fileInputGroupPathsName').textContent = 'Nenhum arquivo';
     markDropZoneHasFile('dropZoneGroupPaths', null);
 
-    renderGroupPaths(null);
-
-    const allWrapper = document.getElementById('allCardsWrapper');
-    if (!allWrapper.classList.contains('hidden')) {
-        await renderConfigPanel();
-    }
-
     showMessage('JSON de grupos limpo com sucesso!', 'success');
+
+    await loadSavedConfig();
 }
