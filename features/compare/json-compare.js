@@ -10,6 +10,7 @@ async function openComparePopup() {
     overlay.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     setupCompareDropZone();
+    setupCompareResizer();
     await renderCompareContent();
 }
 
@@ -110,7 +111,51 @@ async function replaceCompareReference() {
     document.getElementById('compareFileInput').click();
 }
 
-// ─── Comparação inteligente ──────────────────────────────────────────────────
+// ─── Resizer: arrastar para redimensionar os painéis ─────────────────────────
+
+function setupCompareResizer() {
+    const resizer = document.getElementById('compareResizer');
+    const container = document.getElementById('comparePanelsContainer');
+    const leftPanel = document.getElementById('compareLeftPanelWrapper');
+    const rightPanel = document.getElementById('compareRightPanelWrapper');
+    if (!resizer || !container || !leftPanel || !rightPanel) return;
+
+    let isResizing = false;
+
+    resizer.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isResizing = true;
+        resizer.classList.add('active');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        const rect = container.getBoundingClientRect();
+        const offsetX = e.clientX - rect.left;
+        const totalWidth = rect.width;
+        const resizerWidth = resizer.offsetWidth + 4; // margins
+
+        // Limitar entre 20% e 80%
+        let leftPercent = (offsetX / totalWidth) * 100;
+        leftPercent = Math.max(20, Math.min(80, leftPercent));
+
+        leftPanel.style.flex = 'none';
+        rightPanel.style.flex = 'none';
+        leftPanel.style.width = `calc(${leftPercent}% - ${resizerWidth / 2}px)`;
+        rightPanel.style.width = `calc(${100 - leftPercent}% - ${resizerWidth / 2}px)`;
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (!isResizing) return;
+        isResizing = false;
+        resizer.classList.remove('active');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+    });
+}
+
 
 /**
  * Renderiza a comparação lado a lado

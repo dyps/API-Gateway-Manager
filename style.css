@@ -2348,7 +2348,6 @@ body.dark .compare-action-btn-danger:hover {
 /* Panels side by side */
 .compare-panels {
     display: flex;
-    gap: 0.75rem;
     flex: 1;
     min-height: 0;
     overflow: hidden;
@@ -2366,6 +2365,47 @@ body.dark .compare-action-btn-danger:hover {
 
 body.dark .compare-panel {
     border-color: #3a4459;
+}
+
+/* Resizer handle entre os painéis */
+.compare-resizer {
+    width: 8px;
+    cursor: col-resize;
+    background: #e2e8f0;
+    border-radius: 4px;
+    flex-shrink: 0;
+    transition: background 0.2s;
+    position: relative;
+    margin: 0 2px;
+}
+
+.compare-resizer:hover,
+.compare-resizer.active {
+    background: #6366f1;
+}
+
+body.dark .compare-resizer {
+    background: #3a4459;
+}
+
+body.dark .compare-resizer:hover,
+body.dark .compare-resizer.active {
+    background: #818cf8;
+}
+
+.compare-resizer::after {
+    content: '⋮';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.7rem;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+body.dark .compare-resizer::after {
+    color: #64748b;
 }
 
 .compare-panel-header {
@@ -2392,6 +2432,7 @@ body.dark .compare-panel-header {
     font-size: 0.78rem;
     line-height: 1.5;
     background: #fafbfc;
+    min-width: 0;
 }
 
 body.dark .compare-panel-content {
@@ -2421,6 +2462,8 @@ body.dark .compare-empty {
 
 .cmp-tree {
     user-select: text;
+    width: max-content;
+    min-width: 100%;
 }
 
 .cmp-node {
@@ -2494,8 +2537,6 @@ body.dark .cmp-toggle {
     color: #1a202c;
     font-weight: 600;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 body.dark .cmp-key {
@@ -2509,8 +2550,6 @@ body.dark .cmp-key {
 
 .cmp-value {
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .cmp-val-string { color: #16a34a; }
@@ -2534,6 +2573,13 @@ body.dark .cmp-val-null { color: #64748b; }
 @media (max-width: 768px) {
     .compare-panels {
         flex-direction: column;
+    }
+    .compare-resizer {
+        display: none;
+    }
+    .compare-panel {
+        width: 100% !important;
+        flex: 1 !important;
     }
     .compare-popup {
         width: 98vw;

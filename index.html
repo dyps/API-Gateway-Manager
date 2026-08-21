@@ -298,12 +298,13 @@
                         <button class="compare-action-btn compare-action-btn-danger" onclick="clearCompareReference()">🗑️ Limpar referência</button>
                     </div>
                 </div>
-                <div class="compare-panels">
-                    <div class="compare-panel">
+                <div class="compare-panels" id="comparePanelsContainer">
+                    <div class="compare-panel" id="compareLeftPanelWrapper">
                         <div class="compare-panel-header">📄 Referência (enviado)</div>
                         <div class="compare-panel-content" id="compareLeftPanel"></div>
                     </div>
-                    <div class="compare-panel">
+                    <div class="compare-resizer" id="compareResizer"></div>
+                    <div class="compare-panel" id="compareRightPanelWrapper">
                         <div class="compare-panel-header">📄 Download (atual)</div>
                         <div class="compare-panel-content" id="compareRightPanel"></div>
                     </div>
