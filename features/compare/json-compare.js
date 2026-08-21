@@ -12,11 +12,27 @@ async function openComparePopup() {
     setupCompareDropZone();
     setupCompareResizer();
     await renderCompareContent();
+
+    // Fechar com ESC
+    function escHandler(e) {
+        if (e.key === 'Escape') closeComparePopup();
+    }
+    overlay._escHandler = escHandler;
+    document.addEventListener('keydown', escHandler);
+
+    // Fechar ao clicar no overlay
+    overlay.onclick = (e) => { if (e.target === overlay) closeComparePopup(); };
 }
 
 function closeComparePopup() {
-    document.getElementById('modalCompare').classList.add('hidden');
+    const overlay = document.getElementById('modalCompare');
+    overlay.classList.add('hidden');
     document.body.style.overflow = '';
+    if (overlay._escHandler) {
+        document.removeEventListener('keydown', overlay._escHandler);
+        overlay._escHandler = null;
+    }
+    overlay.onclick = null;
 }
 
 /**

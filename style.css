@@ -2692,6 +2692,44 @@ body.dark .env-field-value::placeholder {
     color: #4a5568;
 }
 
+/* ─── Gateway Responses Editor ───────────────────────────────────────────────*/
+
+.gw-editor-item input:focus,
+.gw-editor-item textarea:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.12);
+}
+
+body.dark .gw-editor-item input:focus,
+body.dark .gw-editor-item textarea:focus {
+    border-color: #818cf8;
+    box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
+}
+
+.gw-editor-summary::-webkit-details-marker { display: none; }
+.gw-editor-summary { list-style: none; }
+
+.gw-editor-summary::before {
+    content: '▶';
+    font-size: 0.6rem;
+    color: #94a3b8;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+details[open] > .gw-editor-summary::before {
+    content: '▼';
+}
+
+#gwResponsesEditBtn {
+    color: #4a5568;
+    transition: color 0.2s, transform 0.15s;
+}
+
+body.dark #gwResponsesEditBtn {
+    color: #94a3b8;
+}
+
 /* ─── Footer ─────────────────────────────────────────────────────────────────*/
 
 .app-footer {

@@ -248,6 +248,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         uploadCard.classList.remove('upload-card-enter');
     }, { once: true });
 
+    // Inicializar botão de edição dos Gateway Responses
+    initGatewayResponsesEditBtn();
+
     await loadSavedConfig();
 
     // Restaurar posição do scroll de forma fluida após a renderização

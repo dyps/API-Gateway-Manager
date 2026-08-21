@@ -66,10 +66,10 @@ async function renderDownloadSection(container) {
                 return (isDefault && status === 'none-found') || (!isDefault && status !== 'none-found');
             });
 
-            const fixedResponses = getFixedGatewayResponses();
+            const effectiveResponses = await getEffectiveGatewayResponses();
             const currentResponses = jsonData['x-amazon-apigateway-gateway-responses'] || {};
-            const gwPending = Object.keys(fixedResponses).filter(k =>
-                !currentResponses[k] || JSON.stringify(currentResponses[k]) !== JSON.stringify(fixedResponses[k])
+            const gwPending = Object.keys(effectiveResponses).filter(k =>
+                !currentResponses[k] || JSON.stringify(currentResponses[k]) !== JSON.stringify(effectiveResponses[k])
             );
 
             const hasPending = criticalGroups.length > 0 || gwPending.length > 0;

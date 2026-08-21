@@ -346,6 +346,23 @@ async function showEnvValuesDialog() {
     const dialog = document.createElement('div');
     dialog.classList.add('modal-box', 'env-values-dialog');
 
+    function closeDialog() {
+        overlay.remove();
+        document.removeEventListener('keydown', escHandler);
+    }
+
+    function escHandler(e) {
+        if (e.key === 'Escape') closeDialog();
+    }
+    document.addEventListener('keydown', escHandler);
+
+    // Botão ✕ no canto (padrão dos outros modais)
+    const closeBtnX = document.createElement('button');
+    closeBtnX.classList.add('modal-close-btn');
+    closeBtnX.textContent = '✕';
+    closeBtnX.onclick = closeDialog;
+    dialog.appendChild(closeBtnX);
+
     const title = document.createElement('h3');
     title.textContent = 'Valores do Ambiente Atual';
     dialog.appendChild(title);
@@ -383,10 +400,10 @@ async function showEnvValuesDialog() {
     const closeBtn = document.createElement('button');
     closeBtn.textContent = 'Fechar';
     closeBtn.classList.add('env-values-close-btn');
-    closeBtn.onclick = () => overlay.remove();
+    closeBtn.onclick = closeDialog;
     dialog.appendChild(closeBtn);
 
     overlay.appendChild(dialog);
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeDialog(); });
     document.body.appendChild(overlay);
 }
